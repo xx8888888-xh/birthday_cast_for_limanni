@@ -79,7 +79,6 @@
           <div class="cd-cell"><b id="cdS">--</b><span>秒</span></div>
         </div>
         <p class="lock-note" id="lockNote">蜡烛会在生日当天自己点亮，在那之前……嘘，先替我保密这份惊喜！</p>
-        <button id="previewBtn" class="preview-btn" type="button">我真的很好奇到底长啥样</button>
       </div>
     </section>
 
@@ -124,24 +123,31 @@
       </div>
     </section>
 
-    <!-- 蛋糕 -->
-    <section class="cake-section card">
-      <p class="section-label">MAKE A WISH</p>
-      <h2 class="section-title">许个愿吧</h2>
-      <div class="cake" id="cake" role="button" tabindex="0" aria-label="点击蛋糕">
-        <div class="candles">
-          <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
-          <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
-          <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
+    <!-- 祝福抽奖 -->
+    <section class="lottery card">
+      <p class="section-label">LUCKY DRAW</p>
+      <h2 class="section-title">戳一下蛋糕，抽一句祝福</h2>
+      <p class="section-intro">这台蛋糕抽奖机里藏了好多句祝福和蛋糕照片～点一下，随机吐出一份，可以一直抽，每次都完全随机，谁也不知道会抽到什么！</p>
+
+      <div class="lottery-stage">
+        <div class="gacha" id="cake" role="button" tabindex="0" aria-label="点击蛋糕抽奖">
+          <span class="gacha-q" id="gachaQ">？</span>
+          <div class="candles">
+            <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
+            <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
+            <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
+          </div>
+          <div class="plate"></div>
+          <div class="layer layer-1"><span class="drip"></span></div>
+          <div class="layer layer-2"><span class="drip"></span><span class="drip drip-b"></span></div>
+          <div class="layer layer-3"><span class="drip"></span></div>
         </div>
-        <div class="plate"></div>
-        <div class="layer layer-1"><span class="drip"></span></div>
-        <div class="layer layer-2"><span class="drip"></span><span class="drip drip-b"></span></div>
-        <div class="layer layer-3"><span class="drip"></span></div>
+        <p class="gacha-hint" id="gachaHint">点一下蛋糕，开始抽奖 ♡</p>
       </div>
-      <div class="cake-actions">
-        <button id="blowBtn" class="btn" type="button" disabled>吹灭蜡烛许个愿</button>
-        <p class="cake-tip" id="cakeTip">点一下蛋糕，会掉出一句祝福（偷偷许愿也可以哦）</p>
+
+      <div class="lottery-result" id="lotteryResult" hidden>
+        <div class="lottery-card" id="lotteryCard"></div>
+        <button id="drawAgain" class="btn" type="button">再抽一次</button>
       </div>
     </section>
 
@@ -176,15 +182,27 @@
     </footer>
   </main>
 
-  <!-- ===== 假预览小弹窗 ===== -->
+  <!-- ===== 信封小弹窗（还没到日期 + 骗人的按钮） ===== -->
   <div id="trickModal" class="modal" hidden>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="trickTitle">
+    <div class="modal-card" role="dialog" aria-modal="true">
       <figure class="modal-photo">
         <img src="assets/photos/bunny.jpg" alt="一只抬头的小白兔" width="1200" height="1800" />
       </figure>
-      <h3 id="trickTitle">大笨蛋！这个按钮是骗人的啦！</h3>
-      <p>生日惊喜要等到 <em>11 月 16 日</em> 才会揭晓哦～<br />到时候再来，保证比这只小兔子还可可爱爱 (๑•̀ㅂ•́)و✧</p>
-      <button id="modalClose" class="btn" type="button">好吧，那我等你</button>
+
+      <!-- 视图一：还没到日期 -->
+      <div id="waitView" class="modal-view">
+        <h3>还没到 11 月 16 日哦～</h3>
+        <p>信封里的惊喜，要等到 <em>11 月 16 日</em> 才会真正打开。<br />在那之前，先替我保密，好不好？</p>
+        <button id="trickBtn" class="btn btn-ghost" type="button">我真的很好奇到底长啥样</button>
+        <button class="btn modal-close" type="button">好吧，那我等你</button>
+      </div>
+
+      <!-- 视图二：大笨蛋 -->
+      <div id="trickView" class="modal-view" hidden>
+        <h3>大笨蛋！这个按钮是骗人的啦！</h3>
+        <p>生日惊喜要等到 <em>11 月 16 日</em> 才会揭晓哦～<br />到时候再来，保证比这只小兔子还可可爱爱 (๑•̀ㅂ•́)و✧</p>
+        <button class="btn modal-close" type="button">好吧，那我等你</button>
+      </div>
     </div>
   </div>
 

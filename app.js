@@ -236,16 +236,24 @@
     }
   };
 
-  /* ---------- 祝福内容（可爱治愈） ---------- */
-  var WISHES = [
-    "愿你的每一天，都像蛋糕一样甜～",
-    "愿喜欢的人，恰好也喜欢你！",
-    "愿你今天比昨天多笑一次！",
-    "愿好运一直黏着你，甩都甩不掉～",
-    "愿你眼里有光，心里有糖。",
-    "愿你把烦恼都吃掉，长胖一点点也没关系！",
-    "愿你不用逞强，也被温柔以待。",
-    "愿你的这一年，每一天都比前一天更精彩！"
+  /* ---------- 祝福抽奖池（文字祝福 + 蛋糕照片，完全随机） ---------- */
+  var LOTTERY = [
+    { type: "text", icon: "🍰", text: "愿你的每一天，都像蛋糕一样甜～" },
+    { type: "text", icon: "💖", text: "愿喜欢的人，恰好也喜欢你！" },
+    { type: "text", icon: "😊", text: "愿你今天比昨天多笑一次！" },
+    { type: "text", icon: "🍀", text: "愿好运一直黏着你，甩都甩不掉～" },
+    { type: "text", icon: "✨", text: "愿你眼里有光，心里有糖。" },
+    { type: "text", icon: "🍮", text: "愿你把烦恼都吃掉，长胖一点点也没关系！" },
+    { type: "text", icon: "🤍", text: "愿你不用逞强，也被温柔以待。" },
+    { type: "text", icon: "🌷", text: "愿你的这一年，每一天都比前一天更精彩！" },
+    { type: "text", icon: "🌊", text: "祝她历经波折，也能找到自己喜欢、对方也喜欢自己的人。" },
+    { type: "text", icon: "🧸", text: "希望你能找到一个真正的好朋友，一起大笑、一起长大。" },
+    { type: "text", icon: "📚", text: "愿你考试都能考好，会的全对，蒙的也全对！" },
+    { type: "photo", src: "assets/photos/cake.jpg",   alt: "一块漂亮的奶油蛋糕", cap: "抽到一块甜甜的蛋糕，先替 11 月 16 日尝一口～" },
+    { type: "photo", src: "assets/photos/candles.jpg", alt: "点着蜡烛的生日蛋糕", cap: "蜡烛和烟花都在排队，等生日那天一起放～" },
+    { type: "photo", src: "assets/photos/confetti.jpg", alt: "五彩缤纷的彩带", cap: "彩带都准备好了，只差生日那天撒下来！" },
+    { type: "photo", src: "assets/photos/cupcake.jpg", alt: "一颗可爱的小蛋糕", cap: "小小的一颗，也是为你准备的心意～" },
+    { type: "photo", src: "assets/photos/dessert.jpg", alt: "覆盆子蛋糕切块", cap: "酸酸甜甜，像极了期待生日的心情～" }
   ];
 
   var CARDS = [
@@ -316,43 +324,50 @@
   }
 
   /* ---------- 蜡烛 ---------- */
-  var cake = null, blowBtn = null, candlesBlown = false;
+  var cake = null, gachaQ = null, lotteryResult = null, lotteryCard = null, drawAgain = null;
 
   function lightCandles() {
     if (!cake) return;
-    cake.classList.remove("blown");
     cake.classList.add("lit");
-    candlesBlown = false;
-    if (blowBtn) blowBtn.disabled = false;
   }
 
-  function blowCandles() {
-    if (!cake || candlesBlown) return;
-    candlesBlown = true;
-    cake.classList.remove("smoke-run");
-    void cake.offsetWidth;
-    cake.classList.remove("lit");
-    cake.classList.add("blown", "smoke-run");
-    if (blowBtn) blowBtn.disabled = true;
-
-    var r = cake.getBoundingClientRect();
-    effectConfetti();
-    effectFireworks(2000);
-    burstSparkles(r.left + r.width / 2, r.top + r.height / 2 - 40, 22, "#ffd97d");
-    setTimeout(function () { showToast("愿望已经替你送出去了，一定会实现的！", 4200); }, 420);
-    setTimeout(function () { showToast("生日快乐，" + NAME + " ♡", 5000); }, 4800);
+  /* ---------- 蛋糕抽奖机 ---------- */
+  function renderLottery(item) {
+    if (!lotteryResult || !lotteryCard) return;
+    if (item.type === "photo") {
+      lotteryCard.innerHTML =
+        '<figure class="lottery-photo">' +
+          '<img src="' + item.src + '" alt="' + item.alt + '" width="1200" height="800" />' +
+          '<figcaption>' + item.cap + '</figcaption>' +
+        '</figure>';
+    } else {
+      lotteryCard.innerHTML =
+        '<span class="lottery-icon">' + item.icon + '</span>' +
+        '<p class="lottery-text">' + item.text + '</p>';
+    }
+    lotteryResult.hidden = false;
+    lotteryCard.classList.remove("lottery-pop");
+    void lotteryCard.offsetWidth; // 触发重排以便重新播放弹出动画
+    lotteryCard.classList.add("lottery-pop");
   }
 
-  var EFFECTS = [effectConfetti, effectFireworks, effectStars, effectRain, effectHearts, effectBalloons, function () { heartFX(16); }];
-
-  function clickCake() {
-    if (!cake) return;
-    cake.classList.add("pop");
-    setTimeout(function () { cake.classList.remove("pop"); }, 240);
+  function drawLottery() {
+    if (!cake || cake.classList.contains("shaking")) return;
+    // 摇一摇抽奖机
+    cake.classList.add("shaking");
+    if (gachaQ) gachaQ.classList.add("spin");
     var r = cake.getBoundingClientRect();
-    burstSparkles(r.left + r.width / 2, r.top + r.height / 2, 12);
-    pick(EFFECTS)();
-    showToast(pick(WISHES));
+    setTimeout(function () {
+      cake.classList.remove("shaking");
+      if (gachaQ) gachaQ.classList.remove("spin");
+      renderLottery(pick(LOTTERY)); // 完全随机，抽之前看不到选项
+      effectConfetti();
+      burstSparkles(r.left + r.width / 2, r.top + r.height / 2, 14);
+      if (gachaQ) {
+        gachaQ.textContent = "♪";
+        setTimeout(function () { if (gachaQ) gachaQ.textContent = "？"; }, 900);
+      }
+    }, 660);
   }
 
   /* ---------- 开场信封 ---------- */
@@ -414,17 +429,28 @@
     syncMusicBtn();
   }
 
-  /* ---------- 骗人的预览按钮 ---------- */
+  /* ---------- 信封小弹窗（还没到日期 + 骗人的按钮） ---------- */
+  var trick = { open: null };
+
   function initTrick() {
-    var btn = $("#previewBtn"), modal = $("#trickModal"), close = $("#modalClose");
-    if (!btn || !modal) return;
+    var modal = $("#trickModal"), waitView = $("#waitView"), trickView = $("#trickView"), trickBtn = $("#trickBtn");
+    if (!modal) return;
+    var closeBtns = modal.querySelectorAll(".modal-close");
     var escHandler = function (e) { if (e.key === "Escape") closeTrick(); };
 
+    function showView(v) {
+      if (waitView) waitView.hidden = (v !== "wait");
+      if (trickView) trickView.hidden = (v !== "trick");
+    }
     function openTrick() {
+      showView("wait");
       modal.hidden = false;
       modal.focus();
       document.body.style.overflow = "hidden";
       document.addEventListener("keydown", escHandler);
+    }
+    function openJoke() {
+      showView("trick");
       effectHearts();
       setTimeout(function () { showToast("骗到你了吧！嘿嘿 (๑˃ᴗ˂)ﻭ"); }, 250);
     }
@@ -432,14 +458,16 @@
       modal.hidden = true;
       document.body.style.overflow = "";
       document.removeEventListener("keydown", escHandler);
+      openEnvelope(); // 关闭弹窗后，才真正打开信封
     }
 
-    btn.addEventListener("click", openTrick);
-    if (close) close.addEventListener("click", closeTrick);
+    if (trickBtn) trickBtn.addEventListener("click", openJoke);
+    Array.prototype.forEach.call(closeBtns, function (b) { b.addEventListener("click", closeTrick); });
     modal.addEventListener("click", function (e) {
       if (e.target === modal || !e.target.closest(".modal-card")) closeTrick();
     });
     modal.setAttribute("tabindex", "-1");
+    trick.open = openTrick;
   }
 
   /* ---------- 初始化 ---------- */
@@ -449,14 +477,22 @@
     initTrick();
 
     cake = $("#cake");
-    blowBtn = $("#blowBtn");
+    gachaQ = $("#gachaQ");
+    lotteryResult = $("#lotteryResult");
+    lotteryCard = $("#lotteryCard");
+    drawAgain = $("#drawAgain");
     musicBtn = $("#musicBtn");
 
     var env = $("#envelope");
     if (env) {
-      env.addEventListener("click", openEnvelope);
+      function onEnvOpen() {
+        // 还没到生日：先弹出「还没到日期」小弹窗，把骗人的按钮藏在这里
+        if (IS_BIRTHDAY) { openEnvelope(); return; }
+        if (trick.open) trick.open();
+      }
+      env.addEventListener("click", onEnvOpen);
       env.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEnvelope(); }
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onEnvOpen(); }
       });
     }
 
@@ -472,12 +508,12 @@
     }
 
     if (cake) {
-      cake.addEventListener("click", clickCake);
+      cake.addEventListener("click", drawLottery);
       cake.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); clickCake(); }
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); drawLottery(); }
       });
     }
-    if (blowBtn) blowBtn.addEventListener("click", blowCandles);
+    if (drawAgain) drawAgain.addEventListener("click", drawLottery);
 
     if (musicBtn) {
       musicBtn.addEventListener("click", function () { setMusic(); });
