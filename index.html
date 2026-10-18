@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday, Limanni!</title>
+  <style>
+    :root {
+      --bg1: #1b1035;
+      --bg2: #3a1c71;
+      --accent: #ffd86b;
+      --pink: #ff7eb3;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: radial-gradient(circle at 50% 20%, var(--bg2), var(--bg1) 70%);
+      color: #fff;
+      overflow: hidden;
+    }
+    .stage { text-align: center; position: relative; z-index: 2; padding: 24px; }
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      letter-spacing: 0.02em;
+      background: linear-gradient(90deg, var(--accent), var(--pink));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: pop 0.9s ease-out both;
+    }
+    .sub {
+      margin-top: 12px;
+      font-size: clamp(0.95rem, 2.4vw, 1.15rem);
+      opacity: 0.8;
+      animation: pop 0.9s 0.2s ease-out both;
+    }
+    .cake {
+      margin: 40px auto 28px;
+      width: 200px;
+      position: relative;
+      animation: pop 0.9s 0.35s ease-out both;
+    }
+    .layer {
+      border-radius: 12px;
+      margin: 0 auto;
+      box-shadow: inset 0 -12px 0 rgba(0,0,0,0.12);
+    }
+    .layer-top { width: 140px; height: 46px; background: #ffb3c7; }
+    .layer-bottom { width: 200px; height: 60px; background: #ff8fab; margin-top: 6px; }
+    .candle {
+      width: 8px; height: 34px;
+      background: linear-gradient(#fff, #ffe9a8);
+      border-radius: 3px;
+      margin: 0 auto 4px;
+      position: relative;
+    }
+    .flame {
+      position: absolute;
+      left: 50%; top: -16px;
+      width: 12px; height: 18px;
+      transform: translateX(-50%);
+      background: radial-gradient(circle at 50% 70%, #fff, var(--accent) 55%, #ff7a00);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: flicker 0.35s infinite alternate;
+    }
+    button {
+      margin-top: 8px;
+      padding: 12px 28px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #2b1240;
+      background: linear-gradient(90deg, var(--accent), var(--pink));
+      font-weight: 700;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(255,126,179,0.45); }
+    .wish {
+      margin-top: 18px;
+      min-height: 24px;
+      font-size: 1.05rem;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .wish.show { opacity: 1; }
+    .balloon {
+      position: fixed;
+      bottom: -120px;
+      width: 34px; height: 44px;
+      border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+      animation: float 7s linear forwards;
+      opacity: 0.9;
+    }
+    @keyframes pop { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+    @keyframes flicker { from { transform: translateX(-50%) scaleY(1); } to { transform: translateX(-50%) scaleY(1.15); } }
+    @keyframes float { to { transform: translateY(-115vh) rotate(12deg); } }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <h1>Happy Birthday, Limanni!</h1>
+    <p class="sub">愿你的每一天都被温柔以待</p>
+    <div class="cake">
+      <div class="candle"><span class="flame"></span></div>
+      <div class="layer layer-top"></div>
+      <div class="layer layer-bottom"></div>
+    </div>
+    <button id="wishBtn">许个愿吧</button>
+    <p class="wish" id="wishText"></p>
+  </div>
+
+  <script>
+    const wishes = [
+      "愿你岁岁平安，年年有今日。",
+      "愿你想要的都拥有，得不到的都释怀。",
+      "愿你眼里有光，心中有爱。",
+      "愿好运常伴，笑容常在。"
+    ];
+    const colors = ["#ffd86b", "#ff7eb3", "#7ee8fa", "#a6ffcb", "#c8a2ff"];
+    const btn = document.getElementById("wishBtn");
+    const wishText = document.getElementById("wishText");
+    let idx = 0;
+
+    function spawnBalloons() {
+      for (let i = 0; i < 10; i++) {
+        const b = document.createElement("div");
+        b.className = "balloon";
+        b.style.left = Math.random() * 100 + "vw";
+        b.style.background = colors[Math.floor(Math.random() * colors.length)];
+        b.style.animationDelay = Math.random() * 1.2 + "s";
+        document.body.appendChild(b);
+        setTimeout(() => b.remove(), 9000);
+      }
+    }
+
+    btn.addEventListener("click", () => {
+      wishText.textContent = wishes[idx % wishes.length];
+      idx++;
+      wishText.classList.add("show");
+      spawnBalloons();
+    });
+  </script>
+</body>
+</html>
