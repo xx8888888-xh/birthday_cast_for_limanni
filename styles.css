@@ -1,0 +1,390 @@
+/* ============================================================
+   生日快乐贺卡 · 样式
+   复用/参考：
+   - canvas-confetti (MIT) 负责彩带与烟花
+   - 信封开场、点蜡烛、点击蛋糕掉落祝福等交互思路，
+     参考开源项目 engrshuvodas/Birthday-Wish-Card 与
+     「Интерактивная поздравительная открытка на JavaScript」
+   ============================================================ */
+
+:root {
+  --night: #0f0a1e;
+  --plum: #241247;
+  --plum-2: #341a5e;
+  --gold: #ffd98a;
+  --gold-deep: #f7b955;
+  --pink: #ff8fb8;
+  --pink-deep: #ff5d92;
+  --cream: #fff6ea;
+  --ink: #2b1140;
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-line: rgba(255, 255, 255, 0.16);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  --radius: 22px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  min-height: 100vh;
+  font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  color: var(--cream);
+  background: radial-gradient(120% 90% at 50% -10%, var(--plum-2), var(--plum) 45%, var(--night) 100%);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 背景装饰 ---------- */
+.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+
+.aurora {
+  position: absolute;
+  width: 60vmax; height: 60vmax;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+}
+.aurora-1 { top: -30vmax; left: -18vmax; background: radial-gradient(circle, rgba(255,143,184,0.55), transparent 65%); animation: drift 22s ease-in-out infinite alternate; }
+.aurora-2 { bottom: -34vmax; right: -20vmax; background: radial-gradient(circle, rgba(122,92,255,0.5), transparent 65%); animation: drift 26s ease-in-out infinite alternate-reverse; }
+@keyframes drift { to { transform: translate3d(6vmax, 3vmax, 0) scale(1.12); } }
+
+.stars i {
+  position: absolute;
+  width: 2px; height: 2px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  animation: twinkle 4s ease-in-out infinite;
+}
+@keyframes twinkle { 0%, 100% { opacity: 0; } 50% { opacity: 0.9; } }
+
+.bokeh i {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(0.3px);
+  opacity: 0;
+  animation: rise linear infinite;
+}
+@keyframes rise {
+  0% { transform: translateY(10vh) scale(0.8); opacity: 0; }
+  12% { opacity: 0.7; }
+  85% { opacity: 0.5; }
+  100% { transform: translateY(-105vh) scale(1.15); opacity: 0; }
+}
+
+/* ---------- 音乐按钮 ---------- */
+.music-btn {
+  position: fixed;
+  top: 18px; right: 18px;
+  z-index: 40;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  font: inherit; font-size: 0.85rem;
+  color: var(--cream);
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.music-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.14); }
+.music-btn.playing { color: var(--ink); background: linear-gradient(90deg, var(--gold), var(--pink)); box-shadow: 0 10px 26px rgba(255,143,184,0.4); }
+
+/* ---------- 信封开场 ---------- */
+.envelope-screen {
+  position: fixed; inset: 0; z-index: 30;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 34px;
+  background: radial-gradient(120% 90% at 50% 30%, var(--plum-2), var(--night) 80%);
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+}
+.envelope-screen.hidden { opacity: 0; visibility: hidden; }
+
+.envelope {
+  position: relative;
+  width: 320px; height: 210px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
+}
+.envelope:hover { transform: translateY(-6px) rotate(-1deg); }
+.envelope.opening { cursor: default; }
+
+.env-shadow {
+  position: absolute; left: 8%; right: 8%; bottom: -26px; height: 40px;
+  background: radial-gradient(closest-side, rgba(0,0,0,0.55), transparent 75%);
+  filter: blur(6px);
+}
+.env-body, .env-front {
+  position: absolute; inset: 0;
+  border-radius: 14px;
+}
+.env-body { background: linear-gradient(160deg, #f7c6d9, #ee8fb4); }
+.env-front {
+  background: linear-gradient(160deg, #ffd9e6, #f79dbf);
+  clip-path: polygon(0 0, 50% 42%, 100% 0, 100% 100%, 0 100%);
+  box-shadow: var(--shadow);
+  z-index: 3;
+}
+.env-flap {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 60%;
+  background: linear-gradient(160deg, #ffc2d8, #f489b1);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  transition: transform 0.75s cubic-bezier(0.6, 0, 0.3, 1);
+  z-index: 4;
+  backface-visibility: hidden;
+}
+.envelope.opening .env-flap { transform: rotateX(-176deg); }
+
+.env-letter {
+  position: absolute; left: 6%; right: 6%; top: 12%;
+  height: 84%;
+  padding: 22px 18px;
+  text-align: center;
+  background: linear-gradient(180deg, #fffaf2, #ffe9d6);
+  color: var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  transform: translateY(0);
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s;
+  z-index: 2;
+}
+.envelope.opening .env-letter { transform: translateY(-150%) scale(1.04); }
+.env-letter-top { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.04em; }
+.env-letter-mid { margin-top: 8px; font-size: 0.82rem; opacity: 0.66; }
+
+.env-seal {
+  position: absolute; left: 50%; top: 34%;
+  width: 52px; height: 52px;
+  display: grid; place-items: center;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 35% 30%, #ffcb5e, #e0623f 75%);
+  color: #fff6e2;
+  font-weight: 800; font-size: 1.35rem;
+  border-radius: 50%;
+  box-shadow: 0 8px 18px rgba(224,98,63,0.5), inset 0 -3px 8px rgba(0,0,0,0.25);
+  z-index: 6;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.envelope.opening .env-seal { transform: translate(-50%, -50%) scale(0.4) rotate(35deg); opacity: 0; }
+
+.env-hint { font-size: 0.9rem; letter-spacing: 0.08em; opacity: 0.72; animation: breathe 2.6s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: 0.35; } }
+
+/* ---------- 主体 ---------- */
+.card-content {
+  position: relative; z-index: 2;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 54px 20px 60px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s ease 0.15s, transform 0.9s ease 0.15s;
+}
+.card-content.visible { opacity: 1; transform: none; }
+
+.hero { text-align: center; }
+.hero-kicker { font-size: 0.72rem; letter-spacing: 0.35em; opacity: 0.6; margin-bottom: 14px; }
+.hero-title {
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  background: linear-gradient(92deg, var(--gold), var(--pink-deep));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-title em { font-style: normal; }
+.hero-sub { margin-top: 16px; min-height: 1.6em; font-size: clamp(0.95rem, 2.5vw, 1.1rem); color: rgba(255,246,234,0.85); }
+.hero-sub .caret { display: inline-block; width: 2px; height: 1.05em; margin-left: 2px; background: var(--gold); vertical-align: -0.18em; animation: blink 0.9s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.card {
+  margin-top: 34px;
+  padding: 30px 26px;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.28);
+  opacity: 0; transform: translateY(26px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.card.reveal { opacity: 1; transform: none; }
+
+.section-label { font-size: 0.7rem; letter-spacing: 0.3em; opacity: 0.55; text-align: center; margin-bottom: 18px; }
+
+/* ---------- 状态 / 倒计时 ---------- */
+.status { text-align: center; }
+.status h2 { font-size: 1.3rem; margin-bottom: 12px; }
+.status p { font-size: 0.95rem; opacity: 0.82; line-height: 1.7; }
+.status-birthday h2 { color: var(--gold); }
+
+.countdown { display: flex; justify-content: center; gap: 12px; margin: 20px 0 16px; }
+.cd-cell {
+  min-width: 74px; padding: 14px 10px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+}
+.cd-cell b { display: block; font-size: 1.6rem; color: var(--gold); font-variant-numeric: tabular-nums; }
+.cd-cell span { font-size: 0.75rem; opacity: 0.6; }
+.lock-note { margin-top: 6px; }
+.preview-link { display: inline-block; margin-top: 14px; font-size: 0.82rem; color: rgba(255,246,234,0.55); text-decoration: none; border-bottom: 1px dashed rgba(255,246,234,0.3); }
+.preview-link:hover { color: var(--gold); }
+
+/* ---------- 蛋糕 ---------- */
+.cake-section { text-align: center; }
+.cake {
+  position: relative;
+  width: 240px;
+  margin: 30px auto 8px;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+}
+.cake:active { transform: scale(0.97); }
+.cake.pop { transform: scale(1.06); }
+
+.candles { display: flex; justify-content: center; gap: 18px; margin-bottom: -4px; }
+.candle { position: relative; width: 8px; height: 42px; background: repeating-linear-gradient(45deg, #fff, #fff 5px, #ffd7e4 5px, #ffd7e4 10px); border-radius: 4px 4px 2px 2px; }
+.flame {
+  position: absolute; left: 50%; top: -20px;
+  width: 13px; height: 20px;
+  transform: translateX(-50%) scale(0);
+  transform-origin: 50% 100%;
+  background: radial-gradient(circle at 50% 72%, #fff, var(--gold) 55%, #ff7a00);
+  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  transition: transform 0.3s ease;
+}
+.cake.lit .flame { transform: translateX(-50%) scale(1); animation: flicker 0.32s ease-in-out infinite alternate; }
+@keyframes flicker {
+  from { transform: translateX(-50%) scale(1) rotate(-2deg); }
+  to   { transform: translateX(-50%) scale(1.12) rotate(2deg); }
+}
+.smoke {
+  position: absolute; left: 50%; top: -18px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.55);
+  opacity: 0;
+}
+.cake.blown .smoke { animation: smoke 1.4s ease-out forwards; }
+@keyframes smoke {
+  0% { opacity: 0.7; transform: translate(-50%, 0) scale(0.6); }
+  100% { opacity: 0; transform: translate(-50%, -46px) scale(2.2); }
+}
+
+.plate { height: 12px; margin: 0 auto -2px; width: 240px; background: linear-gradient(180deg, #ffe9f2, #d9b8c6); border-radius: 50%; box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
+.layer { position: relative; margin: 0 auto; border-radius: 10px; box-shadow: inset 0 -10px 0 rgba(0,0,0,0.08); }
+.layer-1 { width: 200px; height: 44px; background: linear-gradient(180deg, #ffd9e6, #f7a6c4); z-index: 1; }
+.layer-2 { width: 168px; height: 40px; margin-top: -6px; background: linear-gradient(180deg, #fff0d0, #f6cf8f); z-index: 2; }
+.layer-3 { width: 140px; height: 36px; margin-top: -6px; background: linear-gradient(180deg, #ffdfe9, #f48cb5); z-index: 3; }
+.drip { position: absolute; top: -1px; left: 12%; width: 16px; height: 18px; background: inherit; filter: brightness(1.06); border-radius: 0 0 10px 10px; }
+.drip-b { left: 58%; }
+
+.cake-actions { margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.btn {
+  padding: 13px 30px; font: inherit; font-weight: 700; font-size: 0.98rem;
+  color: var(--ink);
+  background: linear-gradient(90deg, var(--gold), var(--pink));
+  border: none; border-radius: 999px; cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(255,143,184,0.45); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.cake-tip { font-size: 0.82rem; opacity: 0.6; }
+
+/* ---------- 翻转祝福卡 ---------- */
+.wishes { margin-top: 34px; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+.flip { perspective: 1200px; height: 150px; opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.flip.reveal { opacity: 1; transform: none; }
+.flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: pointer; }
+.flip.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 20px;
+  text-align: center;
+  border-radius: 18px;
+  backface-visibility: hidden;
+  border: 1px solid var(--glass-line);
+  backdrop-filter: blur(10px);
+}
+.flip-front { background: linear-gradient(150deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05)); }
+.flip-front .num { font-size: 0.7rem; letter-spacing: 0.28em; opacity: 0.55; }
+.flip-front .tt { font-size: 1.02rem; font-weight: 600; }
+.flip-front .hint { font-size: 0.72rem; opacity: 0.5; }
+.flip-back { background: linear-gradient(150deg, rgba(255,217,138,0.9), rgba(255,93,146,0.85)); color: var(--ink); transform: rotateY(180deg); font-size: 0.95rem; line-height: 1.6; font-weight: 500; }
+
+/* ---------- 信 ---------- */
+.letter { text-align: center; }
+.polaroid {
+  width: min(420px, 100%);
+  margin: 0 auto 24px;
+  padding: 12px 12px 30px;
+  background: #fffaf2;
+  border-radius: 6px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.4);
+  transform: rotate(-1.6deg);
+  transition: transform 0.5s ease;
+}
+.polaroid:hover { transform: rotate(0deg) scale(1.02); }
+.polaroid .postcard-art { width: 100%; height: auto; display: block; border-radius: 3px; aspect-ratio: 16 / 9; }
+.polaroid figcaption { margin-top: 12px; color: #6b5468; font-size: 0.8rem; letter-spacing: 0.12em; }
+.letter-body { text-align: left; max-width: 620px; margin: 0 auto; }
+.letter-body p { margin-bottom: 14px; font-size: 0.98rem; line-height: 1.9; opacity: 0.9; }
+.letter-body em { font-style: normal; color: var(--gold); }
+.letter-body .sign { margin-top: 22px; text-align: right; font-size: 0.9rem; opacity: 0.7; }
+
+.foot { margin-top: 40px; text-align: center; font-size: 0.76rem; opacity: 0.45; line-height: 1.8; }
+.foot a { color: inherit; }
+
+/* ---------- 飘浮气球（JS 生成） ---------- */
+.balloon {
+  position: fixed; bottom: -140px; z-index: 1;
+  width: 40px; height: 52px;
+  border-radius: 50% 50% 50% 50% / 46% 46% 54% 54%;
+  pointer-events: none;
+  animation: float-up linear forwards;
+}
+.balloon::after {
+  content: ""; position: absolute; left: 50%; top: 100%;
+  width: 1px; height: 44px; background: rgba(255,255,255,0.35);
+  transform: translateX(-50%);
+}
+@keyframes float-up { to { transform: translateY(-135vh) rotate(10deg); } }
+
+/* ---------- 提示气泡 ---------- */
+.toast {
+  position: fixed; left: 50%; top: 76px;
+  z-index: 50;
+  max-width: min(460px, 88vw);
+  padding: 14px 22px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: linear-gradient(92deg, var(--gold), var(--pink));
+  border-radius: 999px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.35);
+  opacity: 0;
+  transform: translate(-50%, -14px) scale(0.92);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 560px) {
+  .envelope { width: 260px; height: 170px; }
+  .card { padding: 24px 18px; }
+  .cd-cell { min-width: 62px; padding: 10px 6px; }
+  .cd-cell b { font-size: 1.3rem; }
+  .cake { width: 210px; }
+  .plate { width: 210px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; }
+}

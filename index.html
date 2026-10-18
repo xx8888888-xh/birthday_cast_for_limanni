@@ -3,148 +3,210 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Happy Birthday, Limanni!</title>
-  <style>
-    :root {
-      --bg1: #1b1035;
-      --bg2: #3a1c71;
-      --accent: #ffd86b;
-      --pink: #ff7eb3;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: radial-gradient(circle at 50% 20%, var(--bg2), var(--bg1) 70%);
-      color: #fff;
-      overflow: hidden;
-    }
-    .stage { text-align: center; position: relative; z-index: 2; padding: 24px; }
-    h1 {
-      font-size: clamp(2rem, 6vw, 3.4rem);
-      letter-spacing: 0.02em;
-      background: linear-gradient(90deg, var(--accent), var(--pink));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: pop 0.9s ease-out both;
-    }
-    .sub {
-      margin-top: 12px;
-      font-size: clamp(0.95rem, 2.4vw, 1.15rem);
-      opacity: 0.8;
-      animation: pop 0.9s 0.2s ease-out both;
-    }
-    .cake {
-      margin: 40px auto 28px;
-      width: 200px;
-      position: relative;
-      animation: pop 0.9s 0.35s ease-out both;
-    }
-    .layer {
-      border-radius: 12px;
-      margin: 0 auto;
-      box-shadow: inset 0 -12px 0 rgba(0,0,0,0.12);
-    }
-    .layer-top { width: 140px; height: 46px; background: #ffb3c7; }
-    .layer-bottom { width: 200px; height: 60px; background: #ff8fab; margin-top: 6px; }
-    .candle {
-      width: 8px; height: 34px;
-      background: linear-gradient(#fff, #ffe9a8);
-      border-radius: 3px;
-      margin: 0 auto 4px;
-      position: relative;
-    }
-    .flame {
-      position: absolute;
-      left: 50%; top: -16px;
-      width: 12px; height: 18px;
-      transform: translateX(-50%);
-      background: radial-gradient(circle at 50% 70%, #fff, var(--accent) 55%, #ff7a00);
-      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-      animation: flicker 0.35s infinite alternate;
-    }
-    button {
-      margin-top: 8px;
-      padding: 12px 28px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      color: #2b1240;
-      background: linear-gradient(90deg, var(--accent), var(--pink));
-      font-weight: 700;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    button:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(255,126,179,0.45); }
-    .wish {
-      margin-top: 18px;
-      min-height: 24px;
-      font-size: 1.05rem;
-      color: var(--accent);
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-    .wish.show { opacity: 1; }
-    .balloon {
-      position: fixed;
-      bottom: -120px;
-      width: 34px; height: 44px;
-      border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
-      animation: float 7s linear forwards;
-      opacity: 0.9;
-    }
-    @keyframes pop { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
-    @keyframes flicker { from { transform: translateX(-50%) scaleY(1); } to { transform: translateX(-50%) scaleY(1.15); } }
-    @keyframes float { to { transform: translateY(-115vh) rotate(12deg); } }
-  </style>
+  <title>生日快乐，Limanni</title>
+  <meta name="description" content="一封只在 11 月 16 日为你亮起蜡烛的生日贺卡。" />
+  <meta property="og:title" content="生日快乐，Limanni" />
+  <meta property="og:description" content="一封只在 11 月 16 日为你亮起蜡烛的生日贺卡。" />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="stage">
-    <h1>Happy Birthday, Limanni!</h1>
-    <p class="sub">愿你的每一天都被温柔以待</p>
-    <div class="cake">
-      <div class="candle"><span class="flame"></span></div>
-      <div class="layer layer-top"></div>
-      <div class="layer layer-bottom"></div>
-    </div>
-    <button id="wishBtn">许个愿吧</button>
-    <p class="wish" id="wishText"></p>
+  <!-- ===== 背景装饰层 ===== -->
+  <div class="bg" aria-hidden="true">
+    <span class="aurora aurora-1"></span>
+    <span class="aurora aurora-2"></span>
+    <div class="stars" id="stars"></div>
+    <div class="bokeh" id="bokeh"></div>
   </div>
 
-  <script>
-    const wishes = [
-      "愿你岁岁平安，年年有今日。",
-      "愿你想要的都拥有，得不到的都释怀。",
-      "愿你眼里有光，心中有爱。",
-      "愿好运常伴，笑容常在。"
-    ];
-    const colors = ["#ffd86b", "#ff7eb3", "#7ee8fa", "#a6ffcb", "#c8a2ff"];
-    const btn = document.getElementById("wishBtn");
-    const wishText = document.getElementById("wishText");
-    let idx = 0;
+  <!-- ===== 音乐开关 ===== -->
+  <button id="musicBtn" class="music-btn" type="button" aria-label="播放或暂停生日歌">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="6.5" cy="18" r="2.5" fill="currentColor"/>
+      <circle cx="16.5" cy="16" r="2.5" fill="currentColor"/>
+    </svg>
+    <span>生日歌</span>
+  </button>
 
-    function spawnBalloons() {
-      for (let i = 0; i < 10; i++) {
-        const b = document.createElement("div");
-        b.className = "balloon";
-        b.style.left = Math.random() * 100 + "vw";
-        b.style.background = colors[Math.floor(Math.random() * colors.length)];
-        b.style.animationDelay = Math.random() * 1.2 + "s";
-        document.body.appendChild(b);
-        setTimeout(() => b.remove(), 9000);
-      }
-    }
+  <!-- ===== 开场：信封 ===== -->
+  <section id="envelopeScreen" class="envelope-screen">
+    <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="打开信封">
+      <div class="env-shadow"></div>
+      <div class="env-letter">
+        <p class="env-letter-top">To&nbsp;Limanni</p>
+        <p class="env-letter-mid">一封写给你的信</p>
+      </div>
+      <div class="env-body"></div>
+      <div class="env-front"></div>
+      <div class="env-flap"></div>
+      <div class="env-seal"><span>L</span></div>
+    </div>
+    <p class="env-hint">轻触信封，开启属于你的生日惊喜</p>
+  </section>
 
-    btn.addEventListener("click", () => {
-      wishText.textContent = wishes[idx % wishes.length];
-      idx++;
-      wishText.classList.add("show");
-      spawnBalloons();
-    });
-  </script>
+  <!-- ===== 主体贺卡 ===== -->
+  <main id="cardContent" class="card-content" aria-hidden="true">
+
+    <header class="hero">
+      <p class="hero-kicker" id="heroKicker">A LITTLE SURPRISE</p>
+      <h1 class="hero-title" id="heroTitle">Happy Birthday, <em>Limanni</em></h1>
+      <p class="hero-sub" id="heroSub"></p>
+    </header>
+
+    <!-- 生日状态 / 倒计时 -->
+    <section class="status card" id="statusCard">
+      <div id="statusBirthday" class="status-birthday" hidden>
+        <h2>今天是 11 月 16 日</h2>
+        <p>属于你的日子，终于到了。整张贺卡为你亮起。</p>
+      </div>
+      <div id="statusCountdown" class="status-countdown">
+        <h2>距离下一个 11 月 16 日</h2>
+        <div class="countdown" id="countdown">
+          <div class="cd-cell"><b id="cdD">--</b><span>天</span></div>
+          <div class="cd-cell"><b id="cdH">--</b><span>时</span></div>
+          <div class="cd-cell"><b id="cdM">--</b><span>分</span></div>
+          <div class="cd-cell"><b id="cdS">--</b><span>秒</span></div>
+        </div>
+        <p class="lock-note" id="lockNote">蜡烛会在生日当天自动点亮，在那之前，先替我保密这份惊喜。</p>
+        <a class="preview-link" id="previewLink" href="?preview=1">提前预览生日当天的样子</a>
+      </div>
+    </section>
+
+    <!-- 蛋糕 -->
+    <section class="cake-section card">
+      <p class="section-label">MAKE A WISH</p>
+      <div class="cake" id="cake" role="button" tabindex="0" aria-label="点击蛋糕">
+        <div class="candles">
+          <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
+          <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
+          <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
+        </div>
+        <div class="plate"></div>
+        <div class="layer layer-1"><span class="drip"></span></div>
+        <div class="layer layer-2"><span class="drip"></span><span class="drip drip-b"></span></div>
+        <div class="layer layer-3"><span class="drip"></span></div>
+      </div>
+      <div class="cake-actions">
+        <button id="blowBtn" class="btn" type="button" disabled>吹灭蜡烛许个愿</button>
+        <p class="cake-tip" id="cakeTip">点一下蛋糕，会掉出一句祝福。</p>
+      </div>
+    </section>
+
+    <!-- 祝福卡翻转墙 -->
+    <section class="wishes-section">
+      <p class="section-label">WISHES FOR YOU</p>
+      <div class="wishes" id="wishes"></div>
+    </section>
+
+    <!-- 信 -->
+    <section class="letter card">
+      <p class="section-label">A LETTER</p>
+      <figure class="polaroid">
+        <svg class="postcard-art" viewBox="0 0 640 360" role="img" aria-label="生日庆祝插画" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#3a1c71" />
+              <stop offset="1" stop-color="#0f0a1e" />
+            </linearGradient>
+            <radialGradient id="halo" cx="50%" cy="45%" r="62%">
+              <stop offset="0" stop-color="#ffd98a" stop-opacity=".5" />
+              <stop offset="1" stop-color="#ffd98a" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="cakeA" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffd9e6" /><stop offset="1" stop-color="#f7a6c4" />
+            </linearGradient>
+            <linearGradient id="cakeB" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#fff0d0" /><stop offset="1" stop-color="#f6cf8f" />
+            </linearGradient>
+            <linearGradient id="cakeC" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffdfe9" /><stop offset="1" stop-color="#f48cb5" />
+            </linearGradient>
+            <radialGradient id="flameG" cx="50%" cy="72%" r="62%">
+              <stop offset="0" stop-color="#ffffff" /><stop offset=".5" stop-color="#ffd98a" /><stop offset="1" stop-color="#ff7a00" />
+            </radialGradient>
+          </defs>
+
+          <rect width="640" height="360" fill="url(#sky)" />
+          <ellipse cx="320" cy="190" rx="310" ry="200" fill="url(#halo)" />
+
+          <!-- 气球 -->
+          <g>
+            <path d="M118 142 Q130 220 148 268" fill="none" stroke="#ffffff" stroke-opacity=".3" />
+            <ellipse cx="118" cy="108" rx="26" ry="32" fill="#ff8fb8" />
+            <ellipse cx="110" cy="98" rx="8" ry="11" fill="#ffffff" opacity=".45" />
+          </g>
+          <g>
+            <path d="M520 130 Q512 208 498 262" fill="none" stroke="#ffffff" stroke-opacity=".3" />
+            <ellipse cx="520" cy="98" rx="21" ry="27" fill="#ffd98a" />
+            <ellipse cx="513" cy="89" rx="6" ry="9" fill="#ffffff" opacity=".5" />
+          </g>
+          <g>
+            <path d="M572 196 Q560 240 544 272" fill="none" stroke="#ffffff" stroke-opacity=".25" />
+            <ellipse cx="572" cy="172" rx="17" ry="22" fill="#a08cff" />
+            <ellipse cx="566" cy="165" rx="5" ry="7" fill="#ffffff" opacity=".45" />
+          </g>
+
+          <!-- 彩纸 -->
+          <g opacity=".9">
+            <rect x="70" y="196" width="10" height="6" rx="2" fill="#ffd98a" transform="rotate(24 75 199)" />
+            <rect x="160" y="70" width="9" height="6" rx="2" fill="#7ee8fa" transform="rotate(-30 164 73)" />
+            <rect x="250" y="52" width="10" height="6" rx="2" fill="#ff8fb8" transform="rotate(42 255 55)" />
+            <rect x="392" y="64" width="9" height="6" rx="2" fill="#a6ffcb" transform="rotate(-18 396 67)" />
+            <rect x="470" y="150" width="10" height="6" rx="2" fill="#ff5d92" transform="rotate(58 475 153)" />
+            <rect x="196" y="150" width="8" height="5" rx="2" fill="#ffffff" opacity=".7" transform="rotate(12 200 152)" />
+            <rect x="560" y="70" width="8" height="5" rx="2" fill="#ffd98a" transform="rotate(-40 564 72)" />
+            <circle cx="130" cy="228" r="3.4" fill="#ffd98a" />
+            <circle cx="452" cy="96" r="3.4" fill="#ff8fb8" />
+            <circle cx="612" cy="128" r="3" fill="#7ee8fa" />
+            <circle cx="46" cy="120" r="3" fill="#ffffff" opacity=".7" />
+          </g>
+
+          <!-- 蛋糕 -->
+          <ellipse cx="320" cy="296" rx="122" ry="15" fill="#ffe9f2" opacity=".92" />
+          <rect x="200" y="252" width="240" height="44" rx="12" fill="url(#cakeA)" />
+          <rect x="222" y="216" width="196" height="40" rx="11" fill="url(#cakeB)" />
+          <rect x="246" y="184" width="148" height="36" rx="10" fill="url(#cakeC)" />
+
+          <!-- 蜡烛 -->
+          <g fill="#fffdf7">
+            <rect x="279" y="158" width="7" height="28" rx="3" />
+            <rect x="316" y="158" width="7" height="28" rx="3" />
+            <rect x="353" y="158" width="7" height="28" rx="3" />
+          </g>
+          <ellipse cx="320" cy="146" rx="66" ry="42" fill="url(#halo)" />
+          <g fill="url(#flameG)">
+            <ellipse cx="282.5" cy="148" rx="6" ry="10" />
+            <ellipse cx="319.5" cy="148" rx="6.6" ry="11" />
+            <ellipse cx="356.5" cy="148" rx="6" ry="10" />
+          </g>
+
+          <!-- 星光 -->
+          <g fill="#fff6ea" opacity=".85">
+            <path d="M96 62 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 z" />
+            <path d="M548 254 l2.6 7 7 2.6 -7 2.6 -2.6 7 -2.6 -7 -7 -2.6 7 -2.6 z" />
+            <path d="M420 128 l2 5.4 5.4 2 -5.4 2 -2 5.4 -2 -5.4 -5.4 -2 5.4 -2 z" />
+          </g>
+        </svg>
+        <figcaption>for the one born on Nov 16</figcaption>
+      </figure>
+      <div class="letter-body">
+        <p>亲爱的 Limanni：</p>
+        <p>11 月 16 日，是把<em>你</em>带到这个世界上的日子。所以每年的这一天，都值得被认真庆祝一次。</p>
+        <p>这张卡片里藏着一个小机关：只有到 11 月 16 日，蜡烛才会为你亮起来，页面才会放起彩带和烟花。在那之前，它只是安静地倒数，提醒我别忘了你的生日。</p>
+        <p>愿你喜欢的人恰好也喜欢你，愿你担心的那些事都不必发生，愿你想去的地方都顺利抵达。</p>
+        <p class="sign">—— 一个把你记在心里的人</p>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p>Built with HTML / CSS / JS · Confetti courtesy of
+        <a href="https://github.com/catdad/canvas-confetti" target="_blank" rel="noopener">canvas-confetti</a> (MIT)</p>
+    </footer>
+  </main>
+
+  <script src="vendor/canvas-confetti.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
