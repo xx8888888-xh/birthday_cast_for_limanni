@@ -2,6 +2,7 @@
    生日快乐贺卡 · 交互逻辑
    - 纯前端判断“今天是否为 11 月 16 日”（读取访问者本地时间）
    - 信封开场 / 点蜡烛 / 吹蜡烛 / 点击蛋糕掉落随机祝福
+   - 生日歌播放真实 MP3（assets/track-1115.mp3，Mixkit 免费可商用）
    - 彩带与烟花复用 canvas-confetti (MIT)
    ============================================================ */
 (function () {
@@ -10,6 +11,7 @@
   /* ---------- 配置 ---------- */
   var BIRTHDAY = { month: 11, day: 16 }; // 11 月 16 日（自然月，非 0 起始）
   var NAME = "Limanni";
+  var SONG_SRC = "assets/track-1115.mp3";
   var IS_PREVIEW = /(?:\?|&)preview=1/.test(window.location.search) ||
                    window.location.hash === "#birthday";
 
@@ -19,7 +21,8 @@
   var pick = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  var PALETTE = ["#ffd98a", "#ff8fb8", "#ff5d92", "#7a5cff", "#7ee8fa", "#a6ffcb", "#fff6ea"];
+  /* 暖色纸感调色板，与页面主题一致，避免荧光感 */
+  var PALETTE = ["#b84b64", "#d9ac5a", "#b8863b", "#e3cbb0", "#8e3348", "#e6b9b0", "#f2e9d9"];
 
   /* ---------- 日期判断（纯前端） ---------- */
   function isBirthdayToday(now) {
@@ -48,17 +51,16 @@
       document.body.appendChild(toastEl);
     }
     toastEl.textContent = text;
-    // 触发重排以便重新播放动画
-    void toastEl.offsetWidth;
+    void toastEl.offsetWidth; // 触发重排以便重新播放动画
     toastEl.classList.add("show");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, ms || 3200);
   }
 
-  /* ---------- 粒子（复用「闪点」写法） ---------- */
+  /* ---------- 粒子 ---------- */
   function sparkle(x, y, color, size, duration) {
     var p = document.createElement("i");
-    color = color || "#ffd98a";
+    color = color || "#d9ac5a";
     size = size || 10;
     Object.assign(p.style, {
       position: "fixed", left: x + "px", top: y + "px",
@@ -82,13 +84,13 @@
         setTimeout(function () {
           var a = Math.random() * Math.PI * 2;
           var d = rnd(12, 60);
-          sparkle(x + Math.cos(a) * d, y + Math.sin(a) * d, color || "#ffd98a", rnd(6, 12), rnd(500, 900));
+          sparkle(x + Math.cos(a) * d, y + Math.sin(a) * d, color || "#d9ac5a", rnd(6, 12), rnd(500, 900));
         }, i * 28);
       })(i);
     }
   }
 
-  /* ---------- 爱心（DOM 绘制） ---------- */
+  /* ---------- 爱心 ---------- */
   function heartFX(count) {
     for (var i = 0; i < (count || 18); i++) {
       (function (i) {
@@ -97,7 +99,7 @@
           var size = rnd(12, 26);
           h.style.cssText =
             "position:fixed;left:" + rnd(6, 94) + "vw;bottom:-40px;width:" + size + "px;height:" + size +
-            "px;background:" + pick(["#ff5d92", "#ff8fb8", "#ffd98a"]) +
+            "px;background:" + pick(["#b84b64", "#e6b9b0", "#d9ac5a"]) +
             ";transform:rotate(45deg);pointer-events:none;z-index:55;border-radius:2px;";
           h.innerHTML =
             '<i style="position:absolute;width:100%;height:100%;border-radius:50%;background:inherit;left:-50%;top:0"></i>' +
@@ -138,7 +140,7 @@
 
   function effectStars() {
     if (!hasConfetti()) return;
-    window.confetti({ particleCount: 90, spread: 360, startVelocity: 30, shapes: ["star"], colors: ["#ffd98a", "#fff6ea", "#ffb3c7"] });
+    window.confetti({ particleCount: 90, spread: 360, startVelocity: 30, shapes: ["star"], colors: ["#d9ac5a", "#f2e9d9", "#e6b9b0"] });
   }
 
   function effectRain() {
@@ -153,43 +155,31 @@
 
   function effectRainbow() {
     if (!hasConfetti()) return;
-    var colors = ["#ff5d92", "#ffa64d", "#ffe066", "#7ee8fa", "#6a8cff", "#c8a2ff"];
+    var colors = ["#b84b64", "#d9ac5a", "#f2e9d9", "#e3cbb0", "#8e3348", "#e6b9b0"];
     window.confetti({ particleCount: 140, spread: 90, origin: { y: 0.65 }, colors: colors });
   }
 
   function effectBalloons() { spawnBalloons(14); }
 
-  /* ---------- 背景：星星 / 微光 ---------- */
+  /* ---------- 背景：纸面微光 ---------- */
   function buildBackground() {
-    var stars = $("#stars"), bokeh = $("#bokeh");
-    if (stars) {
-      var sf = document.createDocumentFragment();
-      for (var i = 0; i < 70; i++) {
-        var s = document.createElement("i");
-        s.style.left = rnd(0, 100) + "vw";
-        s.style.top = rnd(0, 100) + "vh";
-        s.style.animationDelay = rnd(0, 4) + "s";
-        var sc = rnd(0.6, 1.8);
-        s.style.transform = "scale(" + sc + ")";
-        sf.appendChild(s);
-      }
-      stars.appendChild(sf);
+    var bokeh = $("#bokeh");
+    if (!bokeh) return;
+    var bf = document.createDocumentFragment();
+    for (var j = 0; j < 18; j++) {
+      var b = document.createElement("i");
+      var size = rnd(7, 22);
+      b.style.width = size + "px";
+      b.style.height = size + "px";
+      b.style.left = rnd(0, 100) + "vw";
+      b.style.background = pick(PALETTE);
+      b.style.opacity = 0;
+      b.style.filter = "blur(" + rnd(0.5, 2.5) + "px)";
+      b.style.animationDuration = rnd(14, 24) + "s";
+      b.style.animationDelay = rnd(0, 14) + "s";
+      bf.appendChild(b);
     }
-    if (bokeh) {
-      var bf = document.createDocumentFragment();
-      for (var j = 0; j < 16; j++) {
-        var b = document.createElement("i");
-        var size = rnd(6, 20);
-        b.style.width = size + "px";
-        b.style.height = size + "px";
-        b.style.left = rnd(0, 100) + "vw";
-        b.style.background = pick(PALETTE);
-        b.style.animationDuration = rnd(11, 20) + "s";
-        b.style.animationDelay = rnd(0, 12) + "s";
-        bf.appendChild(b);
-      }
-      bokeh.appendChild(bf);
-    }
+    bokeh.appendChild(bf);
   }
 
   /* ---------- 气球 ---------- */
@@ -201,72 +191,47 @@
           var b = document.createElement("div");
           b.className = "balloon";
           b.style.left = rnd(3, 95) + "vw";
-          b.style.background = "radial-gradient(circle at 34% 30%, #fff8, " + pick(PALETTE) + " 62%)";
-          b.style.animationDuration = rnd(8, 14) + "s";
+          b.style.background = "radial-gradient(circle at 34% 30%, #fff, " + pick(["#e6b9b0", "#e3cbb0", "#d9ac5a", "#f2c9c2"]) + " 68%)";
+          b.style.animationDuration = rnd(9, 15) + "s";
           document.body.appendChild(b);
-          setTimeout(function () { b.remove(); }, 15000);
+          setTimeout(function () { b.remove(); }, 16000);
         }, i * 180);
       })(i);
     }
   }
 
-  /* ---------- 生日歌（Web Audio 合成，无外部音频文件） ---------- */
-  var tune = (function () {
-    var F = { G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
-    // [音高, 拍数]
-    return [
-      [F.G4, 0.5], [F.G4, 0.5], [F.A4, 1], [F.G4, 1], [F.C5, 1], [F.B4, 1.8],
-      [F.G4, 0.5], [F.G4, 0.5], [F.A4, 1], [F.G4, 1], [F.D5, 1], [F.C5, 1.8],
-      [F.G4, 0.5], [F.G4, 0.5], [F.G5, 1], [F.E5, 1], [F.C5, 1], [F.B4, 1], [F.A4, 1.6],
-      [F.F5, 0.5], [F.F5, 0.5], [F.E5, 1], [F.C5, 1], [F.D5, 1], [F.C5, 1.8]
-    ];
-  })();
-
+  /* ---------- 生日歌：真实 MP3 ---------- */
   var music = {
-    ctx: null, playing: false, timer: null,
+    el: null, playing: false,
     ensure: function () {
-      if (!this.ctx) {
-        var AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return null;
-        this.ctx = new AC();
+      if (!this.el) {
+        this.el = new Audio(SONG_SRC);
+        this.el.loop = true;
+        this.el.preload = "auto";
+        this.el.volume = 0.7;
       }
-      if (this.ctx.state === "suspended") this.ctx.resume();
-      return this.ctx;
-    },
-    note: function (freq, at, dur) {
-      var ctx = this.ctx;
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.type = "triangle";
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.0001, at);
-      gain.gain.exponentialRampToValueAtTime(0.16, at + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(at);
-      osc.stop(at + dur + 0.05);
-    },
-    playLoop: function () {
-      var ctx = this.ensure();
-      if (!ctx) return;
-      var beat = 0.46, t = ctx.currentTime + 0.08;
-      tune.forEach(function (n) { music.note(n[0], t, n[1] * beat); t += n[1] * beat; });
-      var total = (t - ctx.currentTime) + 1.4;
-      this.timer = setTimeout(function () { if (music.playing) music.playLoop(); }, total * 1000);
+      return this.el;
     },
     start: function () {
-      if (this.playing) return;
-      this.playing = true;
-      this.playLoop();
+      var el = this.ensure();
+      el.play().then(function () {
+        music.playing = true;
+        syncMusicBtn();
+      }).catch(function () {
+        // 浏览器可能因缺少用户手势而拒绝，交由按钮兜底
+        music.playing = false;
+        syncMusicBtn();
+      });
     },
     stop: function () {
+      if (this.el) this.el.pause();
       this.playing = false;
-      clearTimeout(this.timer);
-      if (this.ctx) { this.ctx.close(); this.ctx = null; }
+      syncMusicBtn();
     },
     toggle: function () {
       if (this.playing) { this.stop(); return false; }
-      this.start(); return true;
+      this.start();
+      return true;
     }
   };
 
@@ -363,7 +328,6 @@
   function blowCandles() {
     if (!cake || candlesBlown) return;
     candlesBlown = true;
-    // 重新触发冒烟动画
     cake.classList.remove("smoke-run");
     void cake.offsetWidth;
     cake.classList.remove("lit");
@@ -373,7 +337,7 @@
     var r = cake.getBoundingClientRect();
     effectConfetti();
     effectFireworks(2200);
-    burstSparkles(r.left + r.width / 2, r.top + r.height / 2 - 40, 22, "#ffd98a");
+    burstSparkles(r.left + r.width / 2, r.top + r.height / 2 - 40, 22, "#d9ac5a");
     setTimeout(function () { showToast("愿望已经替你送出去了，一定会实现的。", 4200); }, 420);
     setTimeout(function () { showToast("生日快乐，" + NAME + "。", 5000); }, 4800);
   }
@@ -396,11 +360,10 @@
     if (!env || env.classList.contains("opening")) return;
     env.classList.add("opening");
 
-    // 白色闪光
     var flash = document.createElement("div");
     flash.style.cssText = "position:fixed;inset:0;background:#fff;z-index:35;pointer-events:none;opacity:0;";
     document.body.appendChild(flash);
-    flash.animate([{ opacity: 0 }, { opacity: 0.9 }, { opacity: 0 }], { duration: 520, easing: "ease-out" })
+    flash.animate([{ opacity: 0 }, { opacity: 0.85 }, { opacity: 0 }], { duration: 520, easing: "ease-out" })
       .onfinish = function () { flash.remove(); };
 
     setTimeout(function () { effectConfetti(); }, 620);
@@ -416,9 +379,9 @@
       }
     }, 1150);
 
-    // 用一次用户手势启动背景音乐（浏览器允许）
+    // 在用户手势内预加载并启动真实生日歌（浏览器允许自动播放）
     if (IS_BIRTHDAY) {
-      music.ensure(); // 在点击手势内创建音频上下文，避免被浏览器拦截
+      music.ensure();
       setTimeout(function () { setMusic(true); }, 900);
     }
   }
@@ -432,20 +395,22 @@
 
   /* ---------- 音乐按钮 ---------- */
   var musicBtn = null;
+  function syncMusicBtn() {
+    if (!musicBtn) return;
+    musicBtn.classList.toggle("playing", music.playing);
+    musicBtn.querySelector("span").textContent = music.playing ? "生日歌 播放中" : "生日歌";
+  }
+
   function setMusic(on) {
     if (!musicBtn) return;
-    var playing;
     if (on === undefined) {
-      playing = music.toggle();
+      music.toggle();
     } else if (on) {
       if (!music.playing) music.start();
-      playing = true;
     } else {
       music.stop();
-      playing = false;
     }
-    musicBtn.classList.toggle("playing", playing);
-    musicBtn.querySelector("span").textContent = playing ? "生日歌 播放中" : "生日歌";
+    syncMusicBtn();
   }
 
   /* ---------- 初始化 ---------- */
@@ -457,7 +422,6 @@
     blowBtn = $("#blowBtn");
     musicBtn = $("#musicBtn");
 
-    // 信封
     var env = $("#envelope");
     if (env) {
       env.addEventListener("click", openEnvelope);
@@ -466,19 +430,17 @@
       });
     }
 
-    // 状态区
     var bEl = $("#statusBirthday"), cEl = $("#statusCountdown");
     if (IS_BIRTHDAY) {
-      bEl.hidden = false;
-      cEl.hidden = true;
+      if (bEl) bEl.hidden = false;
+      if (cEl) cEl.hidden = true;
       lightCandles();
     } else {
-      bEl.hidden = true;
-      cEl.hidden = false;
+      if (bEl) bEl.hidden = true;
+      if (cEl) cEl.hidden = false;
       startCountdown();
     }
 
-    // 蛋糕
     if (cake) {
       cake.addEventListener("click", clickCake);
       cake.addEventListener("keydown", function (e) {
@@ -487,13 +449,11 @@
     }
     if (blowBtn) blowBtn.addEventListener("click", blowCandles);
 
-    // 音乐
     if (musicBtn) {
       musicBtn.addEventListener("click", function () { setMusic(); });
       musicBtn.style.display = "inline-flex";
     }
 
-    // 主标副标题
     var sub = $("#heroSub");
     if (sub) {
       if (IS_PREVIEW && !isBirthdayToday()) {
@@ -507,7 +467,6 @@
       }
     }
 
-    // 背景气球
     if (!reduceMotion) {
       spawnBalloons(6);
       setInterval(function () { spawnBalloons(3); }, 7000);

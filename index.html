@@ -8,15 +8,12 @@
   <meta property="og:title" content="生日快乐，Limanni" />
   <meta property="og:description" content="一封只在 11 月 16 日为你亮起蜡烛的生日贺卡。" />
   <meta property="og:type" content="website" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- ===== 背景装饰层 ===== -->
+  <!-- ===== 背景：纸张与彩纸虚焦 ===== -->
   <div class="bg" aria-hidden="true">
-    <span class="aurora aurora-1"></span>
-    <span class="aurora aurora-2"></span>
-    <div class="stars" id="stars"></div>
+    <span class="bg-wash"></span>
     <div class="bokeh" id="bokeh"></div>
   </div>
 
@@ -32,10 +29,12 @@
 
   <!-- ===== 开场：信封 ===== -->
   <section id="envelopeScreen" class="envelope-screen">
+    <p class="env-dateline">HAPPY BIRTHDAY · NOV 16</p>
     <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="打开信封">
       <div class="env-shadow"></div>
       <div class="env-letter">
-        <p class="env-letter-top">To&nbsp;Limanni</p>
+        <span class="env-letter-stamp">11·16</span>
+        <p class="env-letter-to">To&nbsp;Limanni</p>
         <p class="env-letter-mid">一封写给你的信</p>
       </div>
       <div class="env-body"></div>
@@ -49,10 +48,17 @@
   <!-- ===== 主体贺卡 ===== -->
   <main id="cardContent" class="card-content" aria-hidden="true">
 
-    <header class="hero">
-      <p class="hero-kicker" id="heroKicker">A LITTLE SURPRISE</p>
-      <h1 class="hero-title" id="heroTitle">Happy Birthday, <em>Limanni</em></h1>
-      <p class="hero-sub" id="heroSub"></p>
+    <!-- 封面 -->
+    <header class="cover">
+      <p class="cover-kicker">A BIRTHDAY ISSUE · NOV 16</p>
+      <h1 class="cover-title">Happy<br />Birthday,<br /><em>Limanni</em></h1>
+      <p class="cover-sub" id="heroSub"></p>
+
+      <figure class="cover-photo">
+        <img src="assets/photos/table.jpg" alt="摆好烛台与鲜花的生日餐桌" width="1600" height="1067" />
+        <figcaption><span>Set the table</span> · 椅子摆好了，就等你入座</figcaption>
+      </figure>
+      <span class="cover-stamp" aria-hidden="true">11<br />16</span>
     </header>
 
     <!-- 生日状态 / 倒计时 -->
@@ -74,9 +80,43 @@
       </div>
     </section>
 
+    <!-- 真实照片墙 -->
+    <section class="gallery">
+      <p class="section-label">THE PARTY, IN REAL LIFE</p>
+      <h2 class="section-title">这些，都是真的</h2>
+      <p class="section-intro">没有一张是画出来的。蛋糕、烛火、彩纸、铺满绣球的餐桌，都替你准备好了。</p>
+      <div class="photo-grid">
+        <figure class="shot shot-wide">
+          <img src="assets/photos/cake.jpg" alt="放着芒果与樱桃的白色生日蛋糕" width="1920" height="1280" loading="lazy" />
+          <figcaption>第一块蛋糕，留给今天的主角</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/photos/cupcake.jpg" alt="薄荷奶油巧克力纸杯蛋糕" width="1400" height="2099" loading="lazy" />
+          <figcaption>先来一颗小蛋糕</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/photos/confetti.jpg" alt="蓝绿色背景上飘落的彩色纸屑" width="1920" height="1280" loading="lazy" />
+          <figcaption>彩纸落下来的样子</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/photos/candles.jpg" alt="点着蜡烛、挂满花串的庆祝场地" width="1600" height="1067" loading="lazy" />
+          <figcaption>为今晚点亮的烛火</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="assets/photos/hall.jpg" alt="摆着白色绣球与金色烛台的餐桌" width="1600" height="1067" loading="lazy" />
+          <figcaption>白绣球铺满的餐桌</figcaption>
+        </figure>
+        <figure class="shot shot-wide">
+          <img src="assets/photos/table.jpg" alt="临着泳池、摆好酒杯与烛台的生日餐桌" width="1600" height="1067" loading="lazy" />
+          <figcaption>椅子都摆好了，只差你来</figcaption>
+        </figure>
+      </div>
+    </section>
+
     <!-- 蛋糕 -->
     <section class="cake-section card">
       <p class="section-label">MAKE A WISH</p>
+      <h2 class="section-title">许个愿吧</h2>
       <div class="cake" id="cake" role="button" tabindex="0" aria-label="点击蛋糕">
         <div class="candles">
           <span class="candle"><i class="flame"></i><i class="smoke"></i></span>
@@ -97,6 +137,7 @@
     <!-- 祝福卡翻转墙 -->
     <section class="wishes-section">
       <p class="section-label">WISHES FOR YOU</p>
+      <h2 class="section-title">翻开这四张</h2>
       <div class="wishes" id="wishes"></div>
     </section>
 
@@ -104,103 +145,21 @@
     <section class="letter card">
       <p class="section-label">A LETTER</p>
       <figure class="polaroid">
-        <svg class="postcard-art" viewBox="0 0 640 360" role="img" aria-label="生日庆祝插画" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#3a1c71" />
-              <stop offset="1" stop-color="#0f0a1e" />
-            </linearGradient>
-            <radialGradient id="halo" cx="50%" cy="45%" r="62%">
-              <stop offset="0" stop-color="#ffd98a" stop-opacity=".5" />
-              <stop offset="1" stop-color="#ffd98a" stop-opacity="0" />
-            </radialGradient>
-            <linearGradient id="cakeA" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ffd9e6" /><stop offset="1" stop-color="#f7a6c4" />
-            </linearGradient>
-            <linearGradient id="cakeB" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#fff0d0" /><stop offset="1" stop-color="#f6cf8f" />
-            </linearGradient>
-            <linearGradient id="cakeC" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ffdfe9" /><stop offset="1" stop-color="#f48cb5" />
-            </linearGradient>
-            <radialGradient id="flameG" cx="50%" cy="72%" r="62%">
-              <stop offset="0" stop-color="#ffffff" /><stop offset=".5" stop-color="#ffd98a" /><stop offset="1" stop-color="#ff7a00" />
-            </radialGradient>
-          </defs>
-
-          <rect width="640" height="360" fill="url(#sky)" />
-          <ellipse cx="320" cy="190" rx="310" ry="200" fill="url(#halo)" />
-
-          <!-- 气球 -->
-          <g>
-            <path d="M118 142 Q130 220 148 268" fill="none" stroke="#ffffff" stroke-opacity=".3" />
-            <ellipse cx="118" cy="108" rx="26" ry="32" fill="#ff8fb8" />
-            <ellipse cx="110" cy="98" rx="8" ry="11" fill="#ffffff" opacity=".45" />
-          </g>
-          <g>
-            <path d="M520 130 Q512 208 498 262" fill="none" stroke="#ffffff" stroke-opacity=".3" />
-            <ellipse cx="520" cy="98" rx="21" ry="27" fill="#ffd98a" />
-            <ellipse cx="513" cy="89" rx="6" ry="9" fill="#ffffff" opacity=".5" />
-          </g>
-          <g>
-            <path d="M572 196 Q560 240 544 272" fill="none" stroke="#ffffff" stroke-opacity=".25" />
-            <ellipse cx="572" cy="172" rx="17" ry="22" fill="#a08cff" />
-            <ellipse cx="566" cy="165" rx="5" ry="7" fill="#ffffff" opacity=".45" />
-          </g>
-
-          <!-- 彩纸 -->
-          <g opacity=".9">
-            <rect x="70" y="196" width="10" height="6" rx="2" fill="#ffd98a" transform="rotate(24 75 199)" />
-            <rect x="160" y="70" width="9" height="6" rx="2" fill="#7ee8fa" transform="rotate(-30 164 73)" />
-            <rect x="250" y="52" width="10" height="6" rx="2" fill="#ff8fb8" transform="rotate(42 255 55)" />
-            <rect x="392" y="64" width="9" height="6" rx="2" fill="#a6ffcb" transform="rotate(-18 396 67)" />
-            <rect x="470" y="150" width="10" height="6" rx="2" fill="#ff5d92" transform="rotate(58 475 153)" />
-            <rect x="196" y="150" width="8" height="5" rx="2" fill="#ffffff" opacity=".7" transform="rotate(12 200 152)" />
-            <rect x="560" y="70" width="8" height="5" rx="2" fill="#ffd98a" transform="rotate(-40 564 72)" />
-            <circle cx="130" cy="228" r="3.4" fill="#ffd98a" />
-            <circle cx="452" cy="96" r="3.4" fill="#ff8fb8" />
-            <circle cx="612" cy="128" r="3" fill="#7ee8fa" />
-            <circle cx="46" cy="120" r="3" fill="#ffffff" opacity=".7" />
-          </g>
-
-          <!-- 蛋糕 -->
-          <ellipse cx="320" cy="296" rx="122" ry="15" fill="#ffe9f2" opacity=".92" />
-          <rect x="200" y="252" width="240" height="44" rx="12" fill="url(#cakeA)" />
-          <rect x="222" y="216" width="196" height="40" rx="11" fill="url(#cakeB)" />
-          <rect x="246" y="184" width="148" height="36" rx="10" fill="url(#cakeC)" />
-
-          <!-- 蜡烛 -->
-          <g fill="#fffdf7">
-            <rect x="279" y="158" width="7" height="28" rx="3" />
-            <rect x="316" y="158" width="7" height="28" rx="3" />
-            <rect x="353" y="158" width="7" height="28" rx="3" />
-          </g>
-          <ellipse cx="320" cy="146" rx="66" ry="42" fill="url(#halo)" />
-          <g fill="url(#flameG)">
-            <ellipse cx="282.5" cy="148" rx="6" ry="10" />
-            <ellipse cx="319.5" cy="148" rx="6.6" ry="11" />
-            <ellipse cx="356.5" cy="148" rx="6" ry="10" />
-          </g>
-
-          <!-- 星光 -->
-          <g fill="#fff6ea" opacity=".85">
-            <path d="M96 62 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 z" />
-            <path d="M548 254 l2.6 7 7 2.6 -7 2.6 -2.6 7 -2.6 -7 -7 -2.6 7 -2.6 z" />
-            <path d="M420 128 l2 5.4 5.4 2 -5.4 2 -2 5.4 -2 -5.4 -5.4 -2 5.4 -2 z" />
-          </g>
-        </svg>
+        <img src="assets/photos/cake.jpg" alt="生日蛋糕" width="1920" height="1280" loading="lazy" />
         <figcaption>for the one born on Nov 16</figcaption>
       </figure>
       <div class="letter-body">
         <p>亲爱的 Limanni：</p>
         <p>11 月 16 日，是把<em>你</em>带到这个世界上的日子。所以每年的这一天，都值得被认真庆祝一次。</p>
         <p>这张卡片里藏着一个小机关：只有到 11 月 16 日，蜡烛才会为你亮起来，页面才会放起彩带和烟花。在那之前，它只是安静地倒数，提醒我别忘了你的生日。</p>
+        <p>照片里的蛋糕、烛火和餐桌，都是真的——就像我希望给你的这一天，不掺一点假。</p>
         <p>愿你喜欢的人恰好也喜欢你，愿你担心的那些事都不必发生，愿你想去的地方都顺利抵达。</p>
         <p class="sign">—— 一个把你记在心里的人</p>
       </div>
     </section>
 
     <footer class="foot">
+      <p>生日歌音频：Mixkit（免费可商用）· 照片：Unsplash / Pexels（免费可商用）</p>
       <p>Built with HTML / CSS / JS · Confetti courtesy of
         <a href="https://github.com/catdad/canvas-confetti" target="_blank" rel="noopener">canvas-confetti</a> (MIT)</p>
     </footer>
