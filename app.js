@@ -228,7 +228,7 @@
     { type: "text", icon: "🧸", text: "希望你能找到一个真正的好朋友，一起大笑、一起长大。" },
     { type: "text", icon: "📚", text: "愿你考试都能考好，会的全对，蒙的也全对！" },
     { type: "photo", src: "assets/photos/cake.jpg",   alt: "一块漂亮的奶油蛋糕", cap: "抽到一块甜甜的蛋糕，先替 11 月 16 日尝一口～" },
-    { type: "photo", src: "assets/photos/candles.jpg", alt: "点着蜡烛的生日蛋糕", cap: "蜡烛和烟花都在排队，等生日那天一起放～" },
+    { type: "photo", src: "assets/photos/puppy.jpg", alt: "粉色背景下的小狗狗特写", cap: "小狗勾都在为你的生日摇尾巴啦～" },
     { type: "photo", src: "assets/photos/confetti.jpg", alt: "五彩缤纷的彩带", cap: "彩带都准备好了，只差生日那天撒下来！" },
     { type: "photo", src: "assets/photos/cupcake.jpg", alt: "一颗可爱的小蛋糕", cap: "小小的一颗，也是为你准备的心意～" },
     { type: "photo", src: "assets/photos/dessert.jpg", alt: "覆盆子蛋糕切块", cap: "酸酸甜甜，像极了期待生日的心情～" }
