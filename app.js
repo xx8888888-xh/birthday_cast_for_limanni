@@ -22,8 +22,8 @@
   var pick = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* 马卡龙色系，与页面主题一致 */
-  var PALETTE = ["#ff8fab", "#ffb6c9", "#ffd6e0", "#ffd97d", "#9fd8c4", "#dcc8f0", "#ffffff"];
+  /* 手帐风配色，与页面主题一致 */
+  var PALETTE = ["#f6a2b6", "#ffe6ee", "#f6cf7b", "#8ed3bd", "#c8b5e6", "#a9cfe6", "#fffdf8"];
   var HEART_CHARS = ["♥", "♡", "♡"];
 
   /* ---------- 日期判断（纯前端） ---------- */
@@ -43,6 +43,27 @@
   }
 
   var IS_BIRTHDAY = isBirthdayToday() || IS_PREVIEW;
+
+  /* 11 月 16 日（含）之后才解锁。
+     解锁一次后会记在本地，避免过完生日又被重新锁上；
+     只有 ?preview=1 / #birthday 这种「特殊技术手段」才能提前打开。 */
+  var UNLOCK_KEY = "limanni-1116-unlocked";
+  function hasBirthdayArrived(now) {
+    now = now || new Date();
+    var m = now.getMonth() + 1;
+    if (m > BIRTHDAY.month) return true;
+    if (m === BIRTHDAY.month && now.getDate() >= BIRTHDAY.day) return true;
+    return false;
+  }
+  function isUnlocked() {
+    if (IS_PREVIEW) return true;
+    if (hasBirthdayArrived()) {
+      try { localStorage.setItem(UNLOCK_KEY, "1"); } catch (e) { /* 忽略 */ }
+      return true;
+    }
+    try { return localStorage.getItem(UNLOCK_KEY) === "1"; } catch (e) { return false; }
+  }
+  var IS_UNLOCKED = isUnlocked();
 
   /* ---------- 提示气泡 ---------- */
   var toastEl = null, toastTimer = null;
@@ -92,32 +113,6 @@
     }
   }
 
-  /* ---------- 爱心 ---------- */
-  function heartFX(count) {
-    for (var i = 0; i < (count || 18); i++) {
-      (function (i) {
-        setTimeout(function () {
-          var h = document.createElement("span");
-          var size = rnd(12, 26);
-          h.style.cssText =
-            "position:fixed;left:" + rnd(6, 94) + "vw;bottom:-40px;width:" + size + "px;height:" + size +
-            "px;background:" + pick(["#ff8fab", "#ffb6c9", "#ffd97d"]) +
-            ";transform:rotate(45deg);pointer-events:none;z-index:55;border-radius:4px;";
-          h.innerHTML =
-            '<i style="position:absolute;width:100%;height:100%;border-radius:50%;background:inherit;left:-50%;top:0"></i>' +
-            '<i style="position:absolute;width:100%;height:100%;border-radius:50%;background:inherit;top:-50%;left:0"></i>';
-          document.body.appendChild(h);
-          h.animate(
-            [{ transform: "translateY(0) rotate(45deg) scale(0.6)", opacity: 0 },
-             { transform: "translateY(-40vh) rotate(45deg) scale(1)", opacity: 1, offset: 0.2 },
-             { transform: "translateY(-105vh) rotate(45deg) scale(1)", opacity: 0 }],
-            { duration: rnd(3200, 5200), easing: "ease-out" }
-          ).onfinish = function () { h.remove(); };
-        }, i * 90);
-      })(i);
-    }
-  }
-
   /* ---------- 彩带 / 烟花 / 爱心（canvas-confetti） ---------- */
   function hasConfetti() { return typeof window.confetti === "function"; }
 
@@ -140,28 +135,11 @@
     })();
   }
 
-  function effectStars() {
-    if (!hasConfetti()) return;
-    window.confetti({ particleCount: 80, spread: 360, startVelocity: 28, shapes: ["star"], colors: ["#ffd97d", "#ffffff", "#ffb6c9"] });
-  }
-
-  function effectRain() {
-    if (!hasConfetti()) return;
-    var end = Date.now() + 1600;
-    (function frame() {
-      window.confetti({ particleCount: 6, angle: 90, spread: 60, startVelocity: 0, gravity: 0.6,
-        ticks: 200, origin: { x: rnd(0, 1), y: -0.1 }, colors: PALETTE });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    })();
-  }
-
   function effectHearts() {
     if (!hasConfetti()) return;
     window.confetti({ particleCount: 40, spread: 100, startVelocity: 32, gravity: 0.7,
-      origin: { y: 0.6 }, colors: ["#ff8fab", "#ffb6c9", "#ffd6e0"], shapes: ["heart"], scalar: 1.4 });
+      origin: { y: 0.6 }, colors: ["#d8557a", "#f6a2b6", "#ffe6ee"], shapes: ["heart"], scalar: 1.4 });
   }
-
-  function effectBalloons() { spawnBalloons(14); }
 
   /* ---------- 背景：漂浮的小爱心 ---------- */
   function buildBackground() {
@@ -192,7 +170,7 @@
           var b = document.createElement("div");
           b.className = "balloon";
           b.style.left = rnd(3, 95) + "vw";
-          b.style.background = "radial-gradient(circle at 34% 30%, #fff, " + pick(["#ffb6c9", "#ffd97d", "#9fd8c4", "#dcc8f0"]) + " 68%)";
+          b.style.background = pick(["#f6a2b6", "#f6cf7b", "#8ed3bd", "#c8b5e6", "#a9cfe6"]);
           b.style.animationDuration = rnd(9, 15) + "s";
           document.body.appendChild(b);
           setTimeout(function () { b.remove(); }, 16000);
@@ -458,7 +436,8 @@
       modal.hidden = true;
       document.body.style.overflow = "";
       document.removeEventListener("keydown", escHandler);
-      openEnvelope(); // 关闭弹窗后，才真正打开信封
+      // 关键：绝不提前放行 —— 关掉弹窗后只回到信封，贺卡要等 11 月 16 日才打开
+      showToast("乖，还没到 11 月 16 日，信封不能提前拆哦～");
     }
 
     if (trickBtn) trickBtn.addEventListener("click", openJoke);
@@ -486,9 +465,9 @@
     var env = $("#envelope");
     if (env) {
       function onEnvOpen() {
-        // 还没到生日：先弹出「还没到日期」小弹窗，把骗人的按钮藏在这里
-        if (IS_BIRTHDAY) { openEnvelope(); return; }
-        if (trick.open) trick.open();
+        // 未解锁：只弹出「还没到日期」，绝不打开贺卡
+        if (!IS_UNLOCKED) { if (trick.open) trick.open(); return; }
+        openEnvelope();
       }
       env.addEventListener("click", onEnvOpen);
       env.addEventListener("keydown", function (e) {

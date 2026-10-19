@@ -1,35 +1,56 @@
 /* ============================================================
-   生日快乐贺卡 · 样式（可爱治愈风 · 手机优先）
-   - 奶油粉 / 薄荷 / 奶黄马卡龙配色，圆润卡片，软乎乎的阴影
-   - 所有照片均为真实拍摄（Unsplash 免费可商用）
-   - 彩带与烟花复用 canvas-confetti (MIT)
-   - 信封开场、点蜡烛、点击蛋糕掉落祝福等交互思路，
-     参考开源项目 engrshuvodas/Birthday-Wish-Card 与
-     「Интерактивная поздравительная открытка на JavaScript」
+   生日快乐贺卡 · 样式
+   方向：治愈系手帐拼贴（paper collage / sticker scrapbook）
+
+   平面设计风：纯色块 + 硬边偏移投影 + 纸纹网格底纹 + 和纸胶带，
+   刻意避开「AI 味」——不用渐变按钮、不用玻璃拟态、不用紫蓝渐变。
+
+   设计原则来自 GitHub 上星标很高的开源设计 skill：
+   · frontend-design（anthropics/skills 一脉，见 mrgoonie/claudekit-skills、
+     JetBrains/skills 分发）：先定一个大胆的美学方向；字体要有性格，
+     不用 Inter / Roboto / Arial；配色用「主色 + 少量锐利强调色」；
+     重视页面加载的错落节奏；背景要做出质感而不是纯色。
+   · claude design system（bergside/awesome-design-skills）：平面按钮、
+     硬朗对比、克制的阴影、4/8/12/16/24/32 间距节奏、显式交互状态。
    ============================================================ */
 
 :root {
-  --bg-1:      #fff5f7;   /* 奶油粉 */
-  --bg-2:      #fdf3ea;   /* 奶油杏 */
-  --bg-3:      #f2faf6;   /* 薄荷 */
-  --card:      #ffffff;
-  --pink:      #ff8fab;
-  --pink-2:    #ffb6c9;
-  --pink-3:    #ffd6e0;
-  --rose:      #e8628c;
-  --rose-deep: #c94b74;
-  --mint:      #9fd8c4;
-  --butter:    #ffd97d;
-  --lav:       #dcc8f0;
-  --ink:       #5a4652;   /* 柔和的深豆沙 */
-  --ink-soft:  #8a7280;
-  --ink-faint: rgba(90, 70, 82, 0.42);
-  --line:      rgba(233, 190, 205, 0.5);
-  --shadow:    0 14px 34px rgba(255, 143, 171, 0.18);
-  --shadow-lg: 0 24px 56px rgba(255, 143, 171, 0.26);
-  --radius:    26px;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Songti SC", "Noto Serif SC", "SimSun", serif;
-  --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", system-ui, sans-serif;
+  /* ---- 纸张 ---- */
+  --paper:      #fffdf8;   /* 象牙白卡纸 */
+  --paper-2:    #fff7ec;
+  --bg:         #f6efe3;   /* 奶油牛皮底 */
+  --grid:       rgba(203, 180, 156, 0.30);
+
+  /* ---- 墨色 ---- */
+  --ink:        #4f4247;
+  --ink-soft:   #8b7a80;
+  --ink-faint:  rgba(79, 66, 71, 0.42);
+
+  /* ---- 线与硬边投影 ---- */
+  --line:       #eadccb;
+  --line-deep:  #dcc9b4;
+  --hard:       rgba(79, 66, 71, 0.14);
+  --hard-2:     rgba(79, 66, 71, 0.22);
+
+  /* ---- 主色 + 锐利强调色 ---- */
+  --pink:       #f6a2b6;
+  --pink-soft:  #ffe6ee;
+  --berry:      #d8557a;   /* 唯一的锐利强调色 */
+  --berry-deep: #b8456a;
+  --mint:       #8ed3bd;
+  --butter:     #f6cf7b;
+  --lilac:      #c8b5e6;
+  --blue:       #a9cfe6;
+
+  --radius:     18px;
+  --radius-sm:  12px;
+  --radius-lg:  24px;
+
+  /* ---- 字体：要有性格，不用系统默认脸 ---- */
+  --round: "Yuanti SC", "YouYuan", "Hiragino Maru Gothic ProN", "Rounded Mplus 1c",
+           "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;   /* 圆体：可爱标题 */
+  --kaiti: "Kaiti SC", "STKaiti", "KaiTi", "Noto Serif SC", "Songti SC", serif; /* 楷体：手写信 */
+  --body:  "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,28 +59,52 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 body {
   min-height: 100vh;
-  font-family: var(--sans);
+  font-family: var(--body);
   color: var(--ink);
-  background: linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 45%, var(--bg-3) 100%);
-  background-attachment: fixed;
+  background-color: var(--bg);
+  /* 手帐方格纸：极淡的横竖格 */
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 26px 26px;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   padding-bottom: 56px;
   padding-bottom: calc(56px + env(safe-area-inset-bottom));
 }
 
-/* ---------- 背景：漂浮的小爱心与软色块 ---------- */
-.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-
-.bg-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(46px);
+/* 纸张颗粒：细密小点，给平面底色加一点手作质感 */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(160, 140, 120, 0.10) 1px, transparent 1px);
+  background-size: 7px 7px;
   opacity: 0.55;
 }
-.bg-blob-1 { width: 52vmax; height: 52vmax; top: -18vmax; left: -16vmax; background: radial-gradient(circle, #ffe1ec, transparent 66%); }
-.bg-blob-2 { width: 46vmax; height: 46vmax; bottom: -20vmax; right: -14vmax; background: radial-gradient(circle, #dff5ec, transparent 66%); }
-.bg-blob-3 { width: 40vmax; height: 40vmax; top: 30%; right: -18vmax; background: radial-gradient(circle, #ffedd1, transparent 66%); }
+
+button { font-family: inherit; }
+:focus-visible { outline: 3px solid var(--berry); outline-offset: 3px; border-radius: 6px; }
+
+/* ============================================================
+   背景装饰：和纸胶带 + 漂浮小爱心
+   ============================================================ */
+.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+
+/* 和纸胶带：半透明、硬边、撕口 */
+.tape {
+  position: fixed;
+  height: 26px;
+  width: 130px;
+  background: var(--tape-c, rgba(246, 162, 182, 0.42));
+  border-radius: 3px;
+  transform: rotate(var(--tape-r, -18deg));
+  clip-path: polygon(0 8%, 3% 0, 97% 5%, 100% 0, 100% 92%, 96% 100%, 4% 95%, 0 100%);
+  opacity: 0.92;
+}
+.tape-1 { top: 9vh;  left: -34px;  width: 158px; --tape-r: -24deg; --tape-c: rgba(246, 207, 123, 0.48); }
+.tape-2 { top: 44vh; right: -40px; width: 166px; --tape-r: 20deg;  --tape-c: rgba(142, 211, 189, 0.46); }
+.tape-3 { bottom: 12vh; left: -30px; width: 148px; --tape-r: 14deg; --tape-c: rgba(200, 181, 230, 0.44); }
 
 .hearts i {
   position: absolute;
@@ -75,44 +120,58 @@ body {
   100% { transform: translateY(-112vh) rotate(10deg) scale(1.1); opacity: 0; }
 }
 
-/* ---------- 音乐按钮 ---------- */
+/* ============================================================
+   音乐按钮（平面）
+   ============================================================ */
 .music-btn {
   position: fixed;
   top: 14px; right: 14px;
   z-index: 40;
   display: inline-flex; align-items: center; gap: 7px;
   padding: 9px 15px;
-  font: inherit; font-size: 0.8rem;
-  color: var(--rose-deep);
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--line);
+  font-size: 0.8rem; font-weight: 700;
+  color: var(--berry-deep);
+  background: var(--paper);
+  border: 2px solid var(--line-deep);
   border-radius: 999px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 6px 18px rgba(255, 143, 171, 0.22);
+  box-shadow: 3px 4px 0 var(--hard);
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease,
+              background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
-.music-btn:hover { transform: translateY(-2px); }
-.music-btn.playing { color: #fff; background: linear-gradient(135deg, var(--pink), var(--rose)); border-color: transparent; }
+.music-btn:hover { transform: translate(-1px, -1px); box-shadow: 5px 6px 0 var(--hard); }
+.music-btn:active { transform: translate(3px, 4px); box-shadow: 0 0 0 var(--hard); }
+.music-btn.playing {
+  color: #fff;
+  background: var(--berry);
+  border-color: var(--berry-deep);
+}
 
-/* ---------- 信封开场（粉粉的） ---------- */
+/* ============================================================
+   信封开场（平面纸感）
+   ============================================================ */
 .envelope-screen {
   position: fixed; inset: 0; z-index: 30;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 36px;
+  gap: 34px;
   padding: 0 20px;
-  background:
-    radial-gradient(70% 55% at 50% 18%, rgba(255, 182, 201, 0.5), transparent 72%),
-    radial-gradient(80% 60% at 50% 110%, rgba(159, 216, 196, 0.4), transparent 70%),
-    linear-gradient(170deg, #ffd9e4, #ffc9d8 50%, #f3d9c6);
+  background-color: #fbd9e4;
+  /* 波点：手帐里的圆点贴纸感，纯平面 */
+  background-image: radial-gradient(#ffffff 2.6px, transparent 2.7px);
+  background-size: 26px 26px;
   transition: opacity 0.7s ease, visibility 0.7s ease;
 }
 .envelope-screen.hidden { opacity: 0; visibility: hidden; }
 
 .env-dateline {
-  font-size: 0.72rem; letter-spacing: 0.3em; text-indent: 0.3em;
-  color: var(--rose-deep);
+  padding: 5px 14px;
+  font-family: var(--round);
+  font-size: 0.72rem; letter-spacing: 0.28em; text-indent: 0.28em;
+  color: var(--berry-deep);
+  background: var(--paper);
+  border: 2px dashed var(--pink);
+  border-radius: 999px;
+  transform: rotate(-1.5deg);
 }
 
 .envelope {
@@ -123,26 +182,29 @@ body {
   transition: transform 0.3s ease;
   transform-style: preserve-3d;
 }
-.envelope:hover { transform: translateY(-6px) rotate(-1deg); }
+.envelope:hover { transform: translateY(-6px) rotate(-1.5deg); }
 .envelope.opening { cursor: default; }
 
-.env-shadow {
-  position: absolute; left: 6%; right: 6%; bottom: -28px; height: 42px;
-  background: radial-gradient(closest-side, rgba(201, 75, 116, 0.4), transparent 75%);
-  filter: blur(7px);
+.env-shadow { display: none; }
+
+.env-body, .env-front { position: absolute; inset: 0; border-radius: 14px; }
+.env-body {
+  background: #f4b9cb;
+  border: 2px solid #e09cb4;
 }
-.env-body, .env-front { position: absolute; inset: 0; border-radius: 16px; }
-.env-body { background: linear-gradient(160deg, #ffd9e6, #ffaec6); }
 .env-front {
-  background: linear-gradient(160deg, #ffe9f0, #ffb8cd);
+  background: #ffeaf1;
+  border: 2px solid #eaa9c0;
   clip-path: polygon(0 0, 50% 44%, 100% 0, 100% 100%, 0 100%);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 5px 6px 0 rgba(79, 66, 71, 0.18);
   z-index: 3;
 }
 .env-flap {
   position: absolute; top: 0; left: 0;
   width: 100%; height: 60%;
-  background: linear-gradient(160deg, #ffc4d6, #ff96b5);
+  background: #f7bcd0;
+  border: 2px solid #e29db8;
+  border-radius: 14px 14px 0 0;
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   transform-origin: top center;
   transition: transform 0.75s cubic-bezier(0.6, 0, 0.3, 1);
@@ -156,10 +218,10 @@ body {
   height: 84%;
   padding: 20px 16px;
   text-align: center;
-  background: linear-gradient(180deg, #fffdfa, #fff3f6);
+  background: var(--paper);
+  border: 2px solid var(--line-deep);
   color: var(--ink);
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(255, 143, 171, 0.25);
+  border-radius: 12px;
   transform: translateY(0);
   transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s;
   z-index: 2;
@@ -169,34 +231,52 @@ body {
   position: absolute; top: 10px; right: 12px;
   padding: 2px 8px;
   font-size: 0.6rem; letter-spacing: 0.12em;
-  color: var(--rose-deep);
-  border: 1px solid rgba(201, 75, 116, 0.5);
+  color: var(--berry-deep);
+  border: 1.5px dashed var(--berry);
   border-radius: 999px;
   transform: rotate(6deg);
   background: #fff;
 }
-.env-letter-to { margin-top: 30px; font-family: var(--serif); font-size: 1.5rem; letter-spacing: 0.02em; color: var(--rose-deep); }
-.env-letter-mid { margin-top: 8px; font-family: var(--serif); font-style: italic; font-size: 0.9rem; color: var(--ink-soft); }
+.env-letter-to {
+  margin-top: 30px;
+  font-family: var(--kaiti); font-size: 1.5rem; letter-spacing: 0.02em;
+  color: var(--berry-deep);
+}
+.env-letter-mid {
+  margin-top: 8px;
+  font-family: var(--round); font-size: 0.9rem;
+  color: var(--ink-soft);
+}
 
 .env-seal {
   position: absolute; left: 50%; top: 36%;
   width: 54px; height: 54px;
   display: grid; place-items: center;
   transform: translate(-50%, -50%);
-  background: radial-gradient(circle at 34% 28%, #ff9db8, var(--rose-deep) 78%);
-  color: #fff5f7;
+  background: var(--berry);
+  border: 2px solid var(--berry-deep);
+  color: #fff;
   font-size: 1.4rem;
   border-radius: 50%;
-  box-shadow: 0 8px 18px rgba(201, 75, 116, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 3px 4px 0 rgba(79, 66, 71, 0.24);
   z-index: 6;
   transition: transform 0.5s ease, opacity 0.5s ease;
 }
 .envelope.opening .env-seal { transform: translate(-50%, -50%) scale(0.4) rotate(35deg); opacity: 0; }
 
-.env-hint { font-size: 0.88rem; letter-spacing: 0.1em; color: var(--rose-deep); opacity: 0.85; animation: breathe 2.6s ease-in-out infinite; }
-@keyframes breathe { 50% { opacity: 0.35; } }
+.env-hint {
+  padding: 5px 14px;
+  font-size: 0.86rem; letter-spacing: 0.08em;
+  color: var(--berry-deep);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  animation: breathe 2.6s ease-in-out infinite;
+}
+@keyframes breathe { 50% { opacity: 0.4; } }
 
-/* ---------- 主体 ---------- */
+/* ============================================================
+   主体
+   ============================================================ */
 .card-content {
   position: relative; z-index: 2;
   max-width: 640px;
@@ -204,38 +284,45 @@ body {
   padding: 54px 18px 20px;
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity 0.9s ease 0.15s, transform 0.9s ease 0.15s;
+  visibility: hidden;
+  transition: opacity 0.9s ease 0.15s, transform 0.9s ease 0.15s, visibility 0.9s;
 }
-.card-content.visible { opacity: 1; transform: none; }
+.card-content.visible { opacity: 1; transform: none; visibility: visible; }
 
-/* ---------- 封面 ---------- */
+/* ============================================================
+   封面
+   ============================================================ */
 .cover { position: relative; text-align: center; }
 .cover-kicker {
-  font-size: 0.68rem; letter-spacing: 0.32em; text-indent: 0.32em;
-  color: var(--rose-deep);
-  padding-bottom: 12px;
-  border-bottom: 1px dashed var(--line);
-  margin-bottom: 22px;
+  display: inline-block;
+  padding: 3px 12px;
+  font-family: var(--round);
+  font-size: 0.66rem; letter-spacing: 0.3em; text-indent: 0.3em;
+  color: #7a5a3e;
+  background: var(--butter);
+  border-radius: 4px;
+  transform: rotate(-1.5deg);
+  margin-bottom: 24px;
 }
 .cover-title {
-  font-family: var(--serif);
-  font-weight: 400;
+  font-family: var(--round);
+  font-weight: 800;
   font-size: clamp(2.4rem, 13vw, 4.4rem);
-  line-height: 1.04;
+  line-height: 1.06;
   letter-spacing: 0.01em;
   color: var(--ink);
 }
 .cover-title em {
-  font-style: italic;
-  color: var(--rose);
+  font-style: normal;
+  color: var(--berry);
   position: relative;
   white-space: nowrap;
 }
 .cover-title em::after {
   content: "";
-  position: absolute; left: 2%; right: 2%; bottom: 0.14em;
-  height: 0.3em;
-  background: linear-gradient(90deg, rgba(255, 182, 201, 0.7), rgba(255, 217, 125, 0.55));
+  position: absolute; left: -2%; right: -2%; bottom: 0.1em;
+  height: 0.34em;
+  background: var(--pink-soft);
   border-radius: 999px;
   z-index: -1;
 }
@@ -245,23 +332,34 @@ body {
   min-height: 1.7em;
   font-size: clamp(0.92rem, 3.6vw, 1.05rem);
   color: var(--ink-soft);
-  line-height: 1.85;
+  line-height: 1.9;
 }
 .cover-sub .caret {
   display: inline-block; width: 2px; height: 1.05em; margin-left: 2px;
-  background: var(--rose); vertical-align: -0.18em;
+  background: var(--berry); vertical-align: -0.18em;
   animation: blink 0.9s steps(1) infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
 
+/* 拍立得：白框 + 硬边投影 + 微微歪 */
 .cover-photo {
   position: relative;
   margin: 30px 0 0;
   background: #fff;
+  border: 2px solid var(--line-deep);
   padding: 10px 10px 0;
-  border-radius: 24px;
-  box-shadow: var(--shadow-lg);
-  transform: rotate(-1deg);
+  border-radius: var(--radius-lg);
+  box-shadow: 6px 7px 0 var(--hard);
+  transform: rotate(-1.4deg);
+}
+.cover-photo::before {
+  content: "";
+  position: absolute; top: -12px; left: 50%; margin-left: -46px;
+  width: 92px; height: 24px;
+  background: rgba(246, 207, 123, 0.6);
+  border-radius: 2px;
+  transform: rotate(-3deg);
+  clip-path: polygon(0 10%, 4% 0, 96% 6%, 100% 0, 100% 90%, 95% 100%, 5% 94%, 0 100%);
 }
 .cover-photo img {
   display: block; width: 100%; height: auto;
@@ -270,12 +368,13 @@ body {
 }
 .cover-photo figcaption {
   padding: 12px 6px 14px;
-  font-family: var(--serif); font-style: italic;
+  font-family: var(--kaiti);
   font-size: 0.85rem; color: var(--ink-soft);
 }
 .cover-photo figcaption span {
-  font-style: normal; letter-spacing: 0.12em;
-  font-size: 0.68rem; color: var(--rose-deep); margin-right: 6px;
+  font-family: var(--round);
+  letter-spacing: 0.12em;
+  font-size: 0.68rem; color: var(--berry-deep); margin-right: 6px;
 }
 
 .cover-stamp {
@@ -283,110 +382,148 @@ body {
   right: 2px; bottom: 70px;
   width: 66px; height: 66px;
   display: grid; place-items: center;
-  font-family: var(--serif); font-size: 1rem; line-height: 1; text-align: center;
-  color: var(--rose-deep);
-  border: 2px dashed var(--pink-2);
+  font-family: var(--round); font-weight: 700;
+  font-size: 1rem; line-height: 1; text-align: center;
+  color: var(--berry-deep);
+  border: 2px dashed var(--pink);
   border-radius: 50%;
   transform: rotate(9deg);
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
 }
 
-/* ---------- 卡片与标题 ---------- */
+/* ============================================================
+   卡片（纸张 + 和纸胶带）
+   ============================================================ */
 .card {
+  position: relative;
   margin-top: 34px;
-  padding: 30px 22px;
-  background: var(--card);
-  border: 1px solid var(--line);
+  padding: 32px 22px;
+  background: var(--paper);
+  border: 2px solid var(--line-deep);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: 6px 7px 0 var(--hard);
   opacity: 0; transform: translateY(26px);
   transition: opacity 0.7s ease, transform 0.7s ease;
 }
 .card.reveal { opacity: 1; transform: none; }
+.card::before {
+  content: "";
+  position: absolute; top: -12px; left: 50%; margin-left: -46px;
+  width: 92px; height: 24px;
+  background: rgba(246, 207, 123, 0.58);
+  border-radius: 2px;
+  transform: rotate(-2.5deg);
+  clip-path: polygon(0 10%, 4% 0, 96% 6%, 100% 0, 100% 90%, 95% 100%, 5% 94%, 0 100%);
+}
+.letter::before { background: rgba(200, 181, 230, 0.5); transform: rotate(2.5deg); margin-left: -52px; }
 
 .section-label {
-  font-size: 0.64rem; letter-spacing: 0.3em; text-indent: 0.3em;
-  color: var(--rose-deep);
-  text-align: center; margin-bottom: 10px;
+  display: inline-block;
+  padding: 3px 12px;
+  font-family: var(--round); font-weight: 700;
+  font-size: 0.64rem; letter-spacing: 0.22em; text-indent: 0.22em;
+  color: #7a5a3e;
+  background: var(--butter);
+  border-radius: 4px;
+  transform: rotate(-1.2deg);
+  margin-bottom: 14px;
 }
 .section-title {
-  font-family: var(--serif); font-weight: 400;
-  font-size: clamp(1.35rem, 5.4vw, 1.8rem);
+  font-family: var(--round); font-weight: 800;
+  font-size: clamp(1.32rem, 5.4vw, 1.75rem);
   text-align: center; letter-spacing: 0.01em;
 }
 
-/* ---------- 状态 / 倒计时 ---------- */
+/* ============================================================
+   状态 / 倒计时
+   ============================================================ */
 .status { text-align: center; }
-.status h2 { font-family: var(--serif); font-weight: 400; font-size: 1.28rem; margin-bottom: 10px; }
-.status p { font-size: 0.93rem; color: var(--ink-soft); line-height: 1.8; }
-.status-birthday h2 { color: var(--rose-deep); }
+.status h2 { font-family: var(--round); font-weight: 800; font-size: 1.24rem; margin-bottom: 10px; }
+.status p { font-size: 0.93rem; color: var(--ink-soft); line-height: 1.85; }
+.status-birthday h2 { color: var(--berry-deep); }
 
-.countdown {
-  display: flex; justify-content: center;
-  gap: 8px; margin: 22px 0 16px;
-}
+.countdown { display: flex; justify-content: center; gap: 8px; margin: 22px 0 16px; }
 .cd-cell {
-  flex: 1; max-width: 84px;
-  min-width: 0;
+  flex: 1; max-width: 84px; min-width: 0;
   padding: 12px 4px;
-  background: linear-gradient(180deg, var(--pink-3), #ffeef3);
-  border: 1px solid var(--line);
-  border-radius: 18px;
+  background: var(--paper-2);
+  border: 2px solid var(--line-deep);
+  border-radius: var(--radius-sm);
+  box-shadow: 3px 4px 0 var(--hard);
 }
+.cd-cell:nth-child(1) { background: #ffe9f0; border-color: #f0bfd0; }
+.cd-cell:nth-child(2) { background: #e6f6f0; border-color: #bcdfd2; }
+.cd-cell:nth-child(3) { background: #fdf2dd; border-color: #edd7a4; }
+.cd-cell:nth-child(4) { background: #eee8f8; border-color: #d3c6e8; }
 .cd-cell b {
   display: block;
-  font-family: var(--serif); font-size: clamp(1.4rem, 6vw, 1.7rem);
-  color: var(--rose-deep);
+  font-family: var(--round); font-weight: 800;
+  font-size: clamp(1.4rem, 6vw, 1.7rem);
+  color: var(--berry-deep);
   font-variant-numeric: tabular-nums;
 }
 .cd-cell span { font-size: 0.7rem; color: var(--ink-soft); }
 .lock-note { margin-top: 6px; }
 
-/* ---------- 真实治愈照片墙 ---------- */
-.gallery { margin-top: 52px; }
+/* ============================================================
+   真实治愈照片墙
+   ============================================================ */
+.gallery { margin-top: 54px; text-align: center; }
 .section-intro {
-  max-width: 32em; margin: 12px auto 26px;
+  max-width: 32em; margin: 14px auto 28px;
   text-align: center; font-size: 0.93rem;
   color: var(--ink-soft); line-height: 1.9;
 }
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
+.photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .shot {
+  position: relative;
   background: #fff;
+  border: 2px solid var(--line-deep);
   padding: 8px 8px 0;
-  border-radius: 20px;
-  box-shadow: var(--shadow);
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease;
+  border-radius: 14px;
+  box-shadow: 5px 6px 0 var(--hard);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
 }
+/* 每张照片贴一条和纸胶带 */
+.shot::before {
+  content: "";
+  position: absolute; top: -9px; left: 50%; margin-left: -32px;
+  width: 64px; height: 19px;
+  background: rgba(246, 162, 182, 0.5);
+  border-radius: 2px;
+  transform: rotate(-3deg);
+  clip-path: polygon(0 12%, 5% 0, 95% 7%, 100% 0, 100% 88%, 94% 100%, 6% 93%, 0 100%);
+  z-index: 2;
+}
+.shot:nth-child(3n+1)::before { background: rgba(142, 211, 189, 0.48); transform: rotate(3deg); }
+.shot:nth-child(3n)::before   { background: rgba(169, 207, 230, 0.5); transform: rotate(-2deg); }
 .shot img {
   display: block; width: 100%; height: auto;
   aspect-ratio: 3 / 2; object-fit: cover;
-  border-radius: 14px;
+  border-radius: 10px;
 }
 .shot:nth-child(odd) { transform: rotate(-1.2deg); }
 .shot:nth-child(even) { transform: rotate(1deg); }
-.shot:hover { transform: rotate(0) translateY(-4px) scale(1.015); box-shadow: var(--shadow-lg); z-index: 2; }
+.shot:hover { transform: rotate(0) translate(-2px, -2px); box-shadow: 8px 9px 0 var(--hard); z-index: 2; }
 .shot-wide { grid-column: 1 / -1; }
 .shot figcaption {
   padding: 10px 4px 12px;
   text-align: center;
-  font-family: var(--serif); font-style: italic;
+  font-family: var(--kaiti);
   font-size: 0.82rem; color: var(--ink-soft);
 }
 
-/* ---------- 蛋糕抽奖机 ---------- */
+/* ============================================================
+   蛋糕抽奖机
+   ============================================================ */
 .lottery { text-align: center; }
-.lottery-stage { margin-top: 26px; }
+.lottery-stage { margin-top: 30px; }
 .gacha {
   position: relative;
   width: 230px;
   margin: 0 auto;
   cursor: pointer;
   transition: transform 0.25s ease;
-  filter: drop-shadow(0 14px 20px rgba(255, 143, 171, 0.3));
 }
 .gacha:active { transform: scale(0.97); }
 .gacha.shaking { animation: gacha-shake 0.62s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
@@ -398,16 +535,19 @@ body {
   60% { transform: translateX(8px) rotate(2deg); }
   75% { transform: translateX(-5px) rotate(-1deg); }
 }
+/* 抽奖前的「？」贴纸 */
 .gacha-q {
-  position: absolute; left: 50%; top: -46px;
+  position: absolute; left: 50%; top: -48px;
   transform: translateX(-50%);
-  width: 56px; height: 56px;
+  width: 58px; height: 58px;
   display: grid; place-items: center;
-  font-family: var(--serif); font-size: 1.8rem;
+  font-family: var(--round); font-weight: 800;
+  font-size: 1.8rem;
   color: #fff;
-  background: radial-gradient(circle at 34% 28%, var(--pink-2), var(--rose) 80%);
+  background: var(--berry);
+  border: 2px solid var(--berry-deep);
   border-radius: 50%;
-  box-shadow: 0 8px 20px rgba(255, 143, 171, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 3px 4px 0 rgba(79, 66, 71, 0.22);
   z-index: 5;
   animation: q-bob 2.4s ease-in-out infinite;
 }
@@ -415,19 +555,24 @@ body {
 @keyframes q-bob { 50% { transform: translateX(-50%) translateY(-5px); } }
 @keyframes q-spin {
   0%   { transform: translateX(-50%) rotate(0) scale(1); }
-  50%  { transform: translateX(-50%) rotate(200deg) scale(1.25); }
+  50%  { transform: translateX(-50%) rotate(200deg) scale(1.2); }
   100% { transform: translateX(-50%) rotate(360deg) scale(1); }
 }
-.gacha-hint { margin-top: 18px; font-size: 0.85rem; color: var(--ink-soft); }
+.gacha-hint { margin-top: 20px; font-size: 0.85rem; color: var(--ink-soft); }
 
 .candles { display: flex; justify-content: center; gap: 18px; margin-bottom: -4px; }
-.candle { position: relative; width: 8px; height: 42px; background: repeating-linear-gradient(45deg, #fffdfa, #fffdfa 5px, #ffb6c9 5px, #ffb6c9 10px); border-radius: 4px 4px 2px 2px; }
+.candle {
+  position: relative; width: 8px; height: 42px;
+  background: repeating-linear-gradient(45deg, #fffdfa, #fffdfa 5px, var(--pink) 5px, var(--pink) 10px);
+  border-radius: 4px 4px 2px 2px;
+}
 .flame {
   position: absolute; left: 50%; top: -20px;
   width: 13px; height: 20px;
   transform: translateX(-50%) scale(0);
   transform-origin: 50% 100%;
-  background: radial-gradient(circle at 50% 72%, #fff, var(--butter) 55%, #ff9d5c);
+  background: var(--butter);
+  border: 2px solid #e8a83c;
   border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
   transition: transform 0.3s ease;
 }
@@ -448,198 +593,287 @@ body {
   100% { opacity: 0; transform: translate(-50%, -46px) scale(2.2); }
 }
 
-.plate { height: 12px; margin: 0 auto -2px; width: 230px; background: linear-gradient(180deg, #ffe4ee, #ffc9d8); border-radius: 50%; box-shadow: 0 10px 22px rgba(255, 143, 171, 0.35); }
-.layer { position: relative; margin: 0 auto; border-radius: 12px; box-shadow: inset 0 -10px 0 rgba(255, 255, 255, 0.35); }
-.layer-1 { width: 196px; height: 44px; background: linear-gradient(180deg, #ffe9f0, #ffc9d8); z-index: 1; }
-.layer-2 { width: 164px; height: 40px; margin-top: -6px; background: linear-gradient(180deg, #fff3e2, #ffe0c0); z-index: 2; }
-.layer-3 { width: 136px; height: 36px; margin-top: -6px; background: linear-gradient(180deg, #ffe9f0, #ffc9d8); z-index: 3; }
-.drip { position: absolute; top: -1px; left: 12%; width: 16px; height: 18px; background: inherit; filter: brightness(1.05); border-radius: 0 0 12px 12px; }
+/* 蛋糕：纯色分层 + 描边 */
+.plate {
+  height: 12px; margin: 0 auto -2px; width: 230px;
+  background: #f2c9d6;
+  border: 2px solid #dda8bb;
+  border-radius: 50%;
+}
+.layer {
+  position: relative; margin: 0 auto;
+  border: 2px solid var(--line-deep);
+  border-radius: 10px;
+}
+.layer-1 { width: 196px; height: 44px; background: #ffe1ea; z-index: 1; }
+.layer-2 { width: 164px; height: 40px; margin-top: -6px; background: #fdeecd; z-index: 2; }
+.layer-3 { width: 136px; height: 36px; margin-top: -6px; background: #ffe1ea; z-index: 3; }
+.drip {
+  position: absolute; top: -1px; left: 12%;
+  width: 16px; height: 16px;
+  background: inherit;
+  border-radius: 0 0 10px 10px;
+}
 .drip-b { left: 58%; }
 
-.lottery-result { margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.lottery-result { margin-top: 26px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .lottery-card {
   width: min(400px, 100%);
   padding: 20px 22px;
-  border-radius: 22px;
-  border: 1px solid var(--line);
-  background: linear-gradient(150deg, #fff, var(--pink-3));
-  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  border: 2px solid var(--line-deep);
+  background: var(--paper-2);
+  box-shadow: 5px 6px 0 var(--hard);
 }
 .lottery-card.lottery-pop { animation: lottery-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3); }
 @keyframes lottery-pop {
-  from { transform: scale(0.7) translateY(18px); opacity: 0; }
+  from { transform: scale(0.7) translateY(18px) rotate(-3deg); opacity: 0; }
 }
 .lottery-icon { display: block; font-size: 2.2rem; margin-bottom: 10px; }
 .lottery-text {
-  font-family: var(--serif); font-size: 1.05rem; line-height: 1.8; color: var(--ink);
+  font-family: var(--round);
+  font-size: 1.05rem; line-height: 1.8; color: var(--ink);
 }
 .lottery-photo { margin: 0; }
 .lottery-photo img {
   display: block; width: 100%;
   aspect-ratio: 3 / 2; object-fit: cover;
-  border-radius: 14px;
+  border-radius: 10px;
+  border: 2px solid var(--line);
 }
 .lottery-photo figcaption {
-  margin-top: 10px;
-  font-family: var(--serif); font-style: italic;
+  margin-top: 12px;
+  font-family: var(--kaiti);
   font-size: 0.85rem; color: var(--ink-soft); line-height: 1.7;
 }
 
+/* ============================================================
+   按钮：平面贴纸风（纯色 + 描边 + 硬边偏移投影）
+   ============================================================ */
 .btn {
   padding: 13px 30px;
-  font: inherit; font-weight: 600; font-size: 0.95rem;
+  font-family: var(--round); font-weight: 800; font-size: 0.95rem;
   color: #fff;
-  background: linear-gradient(135deg, var(--pink), var(--rose-deep));
-  border: none; border-radius: 999px; cursor: pointer;
-  box-shadow: 0 10px 24px rgba(255, 143, 171, 0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  background: var(--berry);
+  border: 2px solid var(--berry-deep);
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 3px 4px 0 var(--hard-2);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
-.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(255, 143, 171, 0.5); }
+.btn:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 5px 6px 0 var(--hard-2); }
+.btn:active:not(:disabled) { transform: translate(3px, 4px); box-shadow: 0 0 0 var(--hard-2); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-ghost {
+  color: var(--berry-deep);
+  background: var(--paper);
+  border: 2px dashed var(--berry);
+  box-shadow: 3px 4px 0 var(--hard);
+}
 
-/* ---------- 翻转祝福卡 ---------- */
-.wishes-section { margin-top: 52px; }
-.wishes { margin-top: 26px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.flip { perspective: 1200px; height: 150px; opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+/* ============================================================
+   翻转祝福卡
+   ============================================================ */
+.wishes-section { margin-top: 54px; text-align: center; }
+.wishes { margin-top: 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.flip {
+  perspective: 1200px; height: 150px;
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
 .flip.reveal { opacity: 1; transform: none; }
-.flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: pointer; }
+.flip-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+  cursor: pointer;
+}
 .flip.flipped .flip-inner { transform: rotateY(180deg); }
 .flip-face {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 8px; padding: 16px;
   text-align: center;
-  border-radius: 20px;
+  border-radius: 14px;
   backface-visibility: hidden;
-  border: 1px solid var(--line);
+  border: 2px solid var(--line-deep);
 }
-.flip-front { background: #fff; box-shadow: var(--shadow); }
-.flip-front .num { font-family: var(--serif); font-size: 1.25rem; color: var(--rose); }
-.flip-front .tt { font-family: var(--serif); font-size: 1rem; }
+.flip-front { background: var(--paper); box-shadow: 5px 6px 0 var(--hard); }
+.flip-front .num { font-family: var(--round); font-weight: 800; font-size: 1.25rem; color: var(--berry); }
+.flip-front .tt { font-family: var(--round); font-weight: 700; font-size: 1rem; }
 .flip-front .hint { font-size: 0.68rem; letter-spacing: 0.12em; color: var(--ink-faint); }
 .flip-back {
-  background: linear-gradient(150deg, var(--rose), var(--pink));
+  background: var(--berry);
+  border-color: var(--berry-deep);
   color: #fff;
   transform: rotateY(180deg);
-  font-family: var(--serif); font-style: italic;
-  font-size: 0.92rem; line-height: 1.7;
+  font-family: var(--kaiti);
+  font-size: 0.92rem; line-height: 1.75;
 }
 
-/* ---------- 信 ---------- */
+/* ============================================================
+   信（手写楷体）
+   ============================================================ */
 .letter { text-align: center; }
 .polaroid {
   width: min(360px, 100%);
-  margin: 4px auto 24px;
+  margin: 6px auto 26px;
   padding: 10px 10px 24px;
-  background: #fffdfa;
-  border-radius: 18px;
-  box-shadow: var(--shadow-lg);
-  transform: rotate(-1.6deg);
-  transition: transform 0.5s ease;
+  background: #fff;
+  border: 2px solid var(--line-deep);
+  border-radius: 14px;
+  box-shadow: 5px 6px 0 var(--hard);
+  transform: rotate(-1.8deg);
+  transition: transform 0.4s ease;
 }
-.polaroid:hover { transform: rotate(0deg) scale(1.02); }
+.polaroid:hover { transform: rotate(0deg); }
 .polaroid img {
   width: 100%; height: auto;
   aspect-ratio: 3 / 2; object-fit: cover;
-  display: block; border-radius: 12px;
+  display: block; border-radius: 8px;
 }
-.polaroid figcaption { margin-top: 12px; font-family: var(--serif); font-style: italic; color: var(--ink-soft); font-size: 0.8rem; letter-spacing: 0.04em; }
+.polaroid figcaption {
+  margin-top: 12px;
+  font-family: var(--kaiti);
+  color: var(--ink-soft); font-size: 0.8rem; letter-spacing: 0.04em;
+}
 .letter-body { text-align: left; max-width: 560px; margin: 0 auto; }
-.letter-body p { margin-bottom: 14px; font-family: var(--serif); font-size: 1.02rem; line-height: 1.95; color: var(--ink); }
-.letter-body em { font-style: italic; color: var(--rose-deep); }
-.letter-body .sign { margin-top: 22px; text-align: right; font-style: italic; font-size: 0.9rem; color: var(--ink-soft); }
+.letter-body p {
+  margin-bottom: 14px;
+  font-family: var(--kaiti);
+  font-size: 1.06rem; line-height: 2; color: var(--ink);
+}
+.letter-body em { font-style: normal; color: var(--berry-deep); font-weight: 700; }
+.letter-body .sign {
+  margin-top: 24px; text-align: right;
+  font-size: 0.9rem; color: var(--ink-soft);
+}
 
-.foot { margin-top: 44px; text-align: center; font-size: 0.72rem; color: var(--ink-faint); line-height: 1.9; }
+.foot { margin-top: 46px; text-align: center; font-size: 0.72rem; color: var(--ink-faint); line-height: 1.9; }
 .foot a { color: inherit; }
 
-/* ---------- 假预览弹窗 ---------- */
+/* ============================================================
+   弹窗
+   ============================================================ */
 .modal {
   position: fixed; inset: 0; z-index: 70;
   display: grid; place-items: center;
   padding: 20px;
-  background: rgba(90, 70, 82, 0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(79, 66, 71, 0.42);
   animation: modal-fade 0.3s ease;
 }
 .modal[hidden] { display: none; }
 @keyframes modal-fade { from { opacity: 0; } }
 
 .modal-card {
+  position: relative;
   width: min(360px, 92vw);
   max-height: calc(100dvh - 32px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 0 22px;
   text-align: center;
-  background: #fff;
-  border-radius: 28px;
-  box-shadow: var(--shadow-lg);
+  background: var(--paper);
+  border: 2px solid var(--line-deep);
+  border-radius: var(--radius-lg);
+  box-shadow: 7px 8px 0 rgba(79, 66, 71, 0.24);
   animation: modal-pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 @keyframes modal-pop {
-  from { transform: translateY(26px) scale(0.92); opacity: 0; }
+  from { transform: translateY(26px) scale(0.92) rotate(-1.5deg); opacity: 0; }
+}
+.modal-card::before {
+  content: "";
+  position: absolute; top: -12px; left: 50%; margin-left: -46px;
+  width: 92px; height: 24px;
+  background: rgba(246, 162, 182, 0.55);
+  border-radius: 2px;
+  transform: rotate(-2.5deg);
+  clip-path: polygon(0 10%, 4% 0, 96% 6%, 100% 0, 100% 90%, 95% 100%, 5% 94%, 0 100%);
+  z-index: 3;
 }
 .modal-photo { margin: 0; }
 .modal-photo img {
   display: block; width: 100%;
-  max-height: 38vh;
+  max-height: 36vh;
   aspect-ratio: 3 / 2; object-fit: cover;
-  border-radius: 28px 28px 0 0;
+  border-bottom: 2px solid var(--line-deep);
+  border-radius: 22px 22px 0 0;
 }
-.modal-view { padding-bottom: 22px; }
+.modal-view { padding: 20px 20px 24px; }
 .modal-view .btn { display: block; margin: 12px auto 0; width: fit-content; }
-.btn-ghost {
-  color: var(--rose-deep);
-  background: linear-gradient(135deg, var(--pink-3), #fff0e0);
-  border: 2px dashed var(--pink-2);
-  box-shadow: 0 8px 20px rgba(255, 143, 171, 0.24);
-}
 .modal-card h3 {
-  margin: 18px 18px 8px;
-  font-family: var(--serif); font-size: 1.35rem;
-  color: var(--rose-deep);
+  margin-bottom: 10px;
+  font-family: var(--round); font-weight: 800;
+  font-size: 1.3rem; line-height: 1.5;
+  color: var(--berry-deep);
 }
-.modal-card > p {
-  margin: 0 20px 18px;
-  font-size: 0.93rem; line-height: 1.9;
-  color: var(--ink-soft);
-}
-.modal-card > p em { font-style: normal; font-weight: 700; color: var(--rose-deep); }
-.modal-card .btn { margin: 0 auto; display: inline-block; }
+.modal-card p { margin-bottom: 6px; font-size: 0.93rem; line-height: 1.9; color: var(--ink-soft); }
+.modal-card p em { font-style: normal; font-weight: 700; color: var(--berry-deep); }
 
-/* ---------- 提示气泡 ---------- */
+/* ============================================================
+   提示气泡
+   ============================================================ */
 .toast {
   position: fixed; left: 50%; top: 68px;
   z-index: 60;
   max-width: min(430px, 86vw);
   padding: 13px 22px;
   text-align: center;
+  font-family: var(--round); font-weight: 700;
   font-size: 0.93rem;
   color: #fff;
-  background: linear-gradient(135deg, var(--pink), var(--rose-deep));
+  background: var(--berry);
+  border: 2px solid var(--berry-deep);
   border-radius: 999px;
-  box-shadow: 0 14px 34px rgba(255, 143, 171, 0.45);
+  box-shadow: 4px 5px 0 var(--hard-2);
   opacity: 0;
   transform: translate(-50%, -14px) scale(0.94);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: none;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
 
-/* ---------- 响应式 ---------- */
+/* ============================================================
+   气球（平面）
+   ============================================================ */
+.balloon {
+  position: fixed;
+  bottom: -120px;
+  width: 34px; height: 42px;
+  border: 2px solid rgba(79, 66, 71, 0.25);
+  border-radius: 50% 50% 46% 46%;
+  pointer-events: none;
+  z-index: 25;
+  animation: balloon-float linear forwards;
+}
+.balloon::after {
+  content: "";
+  position: absolute; left: 50%; top: 100%;
+  width: 1.5px; height: 46px;
+  background: rgba(79, 66, 71, 0.25);
+  transform: translateX(-50%);
+}
+@keyframes balloon-float {
+  0%   { transform: translateY(0) rotate(-4deg); opacity: 0; }
+  10%  { opacity: 0.9; }
+  100% { transform: translateY(-116vh) rotate(6deg); opacity: 0; }
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
 @media (max-width: 420px) {
   .envelope { height: 190px; }
   .env-letter-to { font-size: 1.3rem; margin-top: 24px; }
-  .card { padding: 26px 18px; }
+  .card { padding: 28px 18px; }
   .cover-stamp { right: 0; bottom: 52px; width: 58px; height: 58px; font-size: 0.9rem; }
   .countdown { gap: 6px; }
-  .cd-cell { padding: 10px 2px; border-radius: 14px; }
+  .cd-cell { padding: 10px 2px; }
   .plate { width: 208px; }
   .gacha { width: 208px; }
-  .wishes { gap: 10px; }
-  .flip { height: 140px; }
-  .photo-grid { gap: 12px; }
+  .wishes { gap: 12px; }
+  .flip { height: 142px; }
+  .photo-grid { gap: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
