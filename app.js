@@ -449,11 +449,31 @@
     trick.open = openTrick;
   }
 
+  /* ---------- 末尾的小彩蛋（藏在最后一行下面的悄悄话） ---------- */
+  function initEgg() {
+    var trigger = $("#eggTrigger"), note = $("#eggNote");
+    if (!trigger || !note) return;
+    var opened = false;
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-controls", "eggNote");
+    trigger.addEventListener("click", function () {
+      if (opened) return;
+      opened = true;
+      note.hidden = false;
+      trigger.classList.add("done");
+      trigger.setAttribute("aria-expanded", "true");
+      var r = trigger.getBoundingClientRect();
+      burstSparkles(r.left + r.width / 2, r.top + r.height / 2, 14);
+      showToast("被你找到啦，这是藏起来的最后一句 ♡");
+    });
+  }
+
   /* ---------- 初始化 ---------- */
   function init() {
     buildBackground();
     buildWishCards();
     initTrick();
+    initEgg();
 
     cake = $("#cake");
     gachaQ = $("#gachaQ");
