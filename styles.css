@@ -121,33 +121,6 @@ button { font-family: inherit; }
 }
 
 /* ============================================================
-   音乐按钮（平面）
-   ============================================================ */
-.music-btn {
-  position: fixed;
-  top: 14px; right: 14px;
-  z-index: 40;
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 15px;
-  font-size: 0.8rem; font-weight: 700;
-  color: var(--berry-deep);
-  background: var(--paper);
-  border: 2px solid var(--line-deep);
-  border-radius: 999px;
-  box-shadow: 3px 4px 0 var(--hard);
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease,
-              background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
-}
-.music-btn:hover { transform: translate(-1px, -1px); box-shadow: 5px 6px 0 var(--hard); }
-.music-btn:active { transform: translate(3px, 4px); box-shadow: 0 0 0 var(--hard); }
-.music-btn.playing {
-  color: #fff;
-  background: var(--berry);
-  border-color: var(--berry-deep);
-}
-
-/* ============================================================
    信封开场（平面纸感）
    ============================================================ */
 .envelope-screen {

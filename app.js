@@ -3,7 +3,6 @@
    - 纯前端判断“今天是否为 11 月 16 日”（读取访问者本地时间）
    - 信封开场 / 点蜡烛 / 吹蜡烛 / 点击蛋糕掉落随机祝福
    - “我真的很好奇到底长啥样”是骗人的按钮：弹出可爱弹窗，不跳转
-   - 生日歌播放真实 MP3（assets/track-1115.mp3，Mixkit 免费可商用）
    - 彩带 / 烟花 / 爱心复用 canvas-confetti (MIT)
    ============================================================ */
 (function () {
@@ -12,7 +11,6 @@
   /* ---------- 配置 ---------- */
   var BIRTHDAY = { month: 11, day: 16 }; // 11 月 16 日（自然月，非 0 起始）
   var NAME = "李曼妮";
-  var SONG_SRC = "assets/track-1115.mp3";
   var IS_PREVIEW = /(?:\?|&)preview=1/.test(window.location.search) ||
                    window.location.hash === "#birthday";
 
@@ -179,41 +177,6 @@
     }
   }
 
-  /* ---------- 生日歌：真实 MP3 ---------- */
-  var music = {
-    el: null, playing: false,
-    ensure: function () {
-      if (!this.el) {
-        this.el = new Audio(SONG_SRC);
-        this.el.loop = true;
-        this.el.preload = "auto";
-        this.el.volume = 0.7;
-      }
-      return this.el;
-    },
-    start: function () {
-      var el = this.ensure();
-      el.play().then(function () {
-        music.playing = true;
-        syncMusicBtn();
-      }).catch(function () {
-        // 浏览器可能因缺少用户手势而拒绝，交由按钮兜底
-        music.playing = false;
-        syncMusicBtn();
-      });
-    },
-    stop: function () {
-      if (this.el) this.el.pause();
-      this.playing = false;
-      syncMusicBtn();
-    },
-    toggle: function () {
-      if (this.playing) { this.stop(); return false; }
-      this.start();
-      return true;
-    }
-  };
-
   /* ---------- 祝福抽奖池（文字祝福 + 蛋糕照片，完全随机） ---------- */
   var LOTTERY = [
     { type: "text", icon: "🍰", text: "愿你的每一天，都像蛋糕一样甜～" },
@@ -372,12 +335,6 @@
         setTimeout(effectFireworks, 1500);
       }
     }, 1150);
-
-    // 在用户手势内预加载并启动真实生日歌（浏览器允许自动播放）
-    if (IS_BIRTHDAY) {
-      music.ensure();
-      setTimeout(function () { setMusic(true); }, 900);
-    }
   }
 
   function revealSections() {
@@ -385,26 +342,6 @@
     Array.prototype.forEach.call(nodes, function (n, i) {
       setTimeout(function () { n.classList.add("reveal"); }, 120 + i * 110);
     });
-  }
-
-  /* ---------- 音乐按钮 ---------- */
-  var musicBtn = null;
-  function syncMusicBtn() {
-    if (!musicBtn) return;
-    musicBtn.classList.toggle("playing", music.playing);
-    musicBtn.querySelector("span").textContent = music.playing ? "生日歌 播放中" : "生日歌";
-  }
-
-  function setMusic(on) {
-    if (!musicBtn) return;
-    if (on === undefined) {
-      music.toggle();
-    } else if (on) {
-      if (!music.playing) music.start();
-    } else {
-      music.stop();
-    }
-    syncMusicBtn();
   }
 
   /* ---------- 信封小弹窗（还没到日期 + 骗人的按钮） ---------- */
@@ -480,7 +417,6 @@
     lotteryResult = $("#lotteryResult");
     lotteryCard = $("#lotteryCard");
     drawAgain = $("#drawAgain");
-    musicBtn = $("#musicBtn");
 
     var env = $("#envelope");
     if (env) {
@@ -513,11 +449,6 @@
       });
     }
     if (drawAgain) drawAgain.addEventListener("click", drawLottery);
-
-    if (musicBtn) {
-      musicBtn.addEventListener("click", function () { setMusic(); });
-      musicBtn.style.display = "inline-flex";
-    }
 
     var sub = $("#heroSub");
     if (sub) {
